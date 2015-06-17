@@ -84,12 +84,9 @@ public class SpotifyStreamerActivityFragment extends Fragment {
         listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Object listItem = parent.getItemAtPosition(position);
-                Context context = getActivity();
-
-
-                Toast toast = Toast.makeText(context, listItem.toString(), Toast.LENGTH_SHORT);
-                toast.show();
+                String listItem = mSpotifySearchAdapter.getItem(position);
+                Toast.makeText(getActivity(), listItem, Toast.LENGTH_SHORT).show();
+                // TODO: navigate to artist top tracks view
             }
         });
 
@@ -119,6 +116,7 @@ public class SpotifyStreamerActivityFragment extends Fragment {
             SpotifyApi api = new SpotifyApi();
             SpotifyService spotify = api.getService();
             ArtistsPager results = spotify.searchArtists(params[0]);
+
             ArrayList<String> artistList = getArtistData(results);
 
             return artistList;
