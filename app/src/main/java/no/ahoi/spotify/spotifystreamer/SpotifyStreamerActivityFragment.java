@@ -1,6 +1,5 @@
 package no.ahoi.spotify.spotifystreamer;
 
-import android.app.LauncherActivity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
@@ -14,17 +13,20 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
+import kaaes.spotify.webapi.android.models.Image;
 
 
 /**
@@ -32,7 +34,7 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
  */
 public class SpotifyStreamerActivityFragment extends Fragment {
     private static final String TAG = SpotifyStreamerActivityFragment.class.getSimpleName();
-    private ArrayAdapter<String> mSpotifySearchAdapter;
+    private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
 
     public SpotifyStreamerActivityFragment() {
     }
@@ -68,23 +70,21 @@ public class SpotifyStreamerActivityFragment extends Fragment {
         });
 
         // Dummy data for the ListView
-        String[] spotifyData = {
-                "No artists found"
-        };
+        ArtistData artist = new ArtistData("null", "Search for an artist", "https://cdn0.iconfinder.com/data/icons/glyph_set/128/search.png");
 
-        // Use ArrayAdapter to translate the spotify data into views for the ListView to display
-        List<String> artists = new ArrayList<>(Arrays.asList(spotifyData));
-        mSpotifySearchAdapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_artist, R.id.listItemArtistTextView, artists);
+        ArrayList<ArtistData> arrayOfArtists = new ArrayList<ArtistData>();
+        mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), arrayOfArtists);
 
         // Find a reference to the fragments ListView to attach the adapter
         ListView listArtists = (ListView) rootView.findViewById(R.id.listArtists);
         listArtists.setAdapter(mSpotifySearchAdapter);
+        mSpotifySearchAdapter.addAll(artist);
 
 
         listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String listItem = mSpotifySearchAdapter.getItem(position);
+                String listItem = mSpotifySearchAdapter.getItem(position).name;
                 Toast.makeText(getActivity(), listItem, Toast.LENGTH_SHORT).show();
                 // TODO: navigate to artist top tracks view
             }
@@ -93,22 +93,11 @@ public class SpotifyStreamerActivityFragment extends Fragment {
         return rootView;
     }
 
-    public class FetchArtistsTask extends AsyncTask<String, Void, ArrayList<String>> {
+    public class FetchArtistsTask extends AsyncTask<String, Void, ArrayList<String[]>> {
         private final String LOG_TAG = FetchArtistsTask.class.getSimpleName();
 
-        private ArrayList<String> getArtistData(ArtistsPager spotifyArtists) {
-            int i = 1;
-            ArrayList<String> artistNames = new ArrayList<>();
-            for(Artist artist : spotifyArtists.artists.items) {
-                artistNames.add(artist.name);
-                Log.v(LOG_TAG, "Spotify Artist #" + i + " " + artist.name);
-                i++;
-            }
-            return artistNames;
-        }
-
         @Override
-        protected ArrayList<String> doInBackground(String... params) {
+        protected ArrayList<String[]> doInBackground(String... params) {
 
             if (params.length == 0) {
                 return null;
@@ -117,19 +106,94 @@ public class SpotifyStreamerActivityFragment extends Fragment {
             SpotifyService spotify = api.getService();
             ArtistsPager results = spotify.searchArtists(params[0]);
 
-            ArrayList<String> artistList = getArtistData(results);
-
-            return artistList;
+            return getArtistData(results);
         }
 
         @Override
-        protected void onPostExecute(ArrayList<String> result) {
+        protected void onPostExecute(ArrayList<String[]> result) {
             if (result != null) {
                 mSpotifySearchAdapter.clear();
-                for(String spotifyArtistStr : result) {
-                    mSpotifySearchAdapter.add(spotifyArtistStr);
+                for(String[] artistData : result) {
+                    ArtistData artist = new ArtistData(artistData[0], artistData[1], artistData[2]);
+                    mSpotifySearchAdapter.add(artist);
+                }
+
+                if (mSpotifySearchAdapter.getCount() == 0) {
+                    Toast.makeText(getActivity(), "Could not find artist.", Toast.LENGTH_SHORT).show();
                 }
             }
+        }
+
+        private ArrayList<String[]> getArtistData(ArtistsPager spotifyArtists) {
+            int i = 0;
+            ArrayList<String[]> artistNames = new ArrayList<String[]>();
+            for(Artist artist : spotifyArtists.artists.items) {
+                String[] artistData = new String[3];
+
+                artistData[0] = artist.id; // Get spotify ID
+                artistData[1] = artist.name; // Save artist name
+                try {
+                    for (Image image : artist.images) {
+                        if (image.height > 200 || image.width > 200) { // image sizes are always in the order: big to small
+                            artistData[2] = image.url; // Get image url
+                        }
+                        else if (artistData[2] == null) { // Fallback to smallest image.
+                            artistData[2] = image.url;
+                        }
+                    }
+                }
+                catch (IndexOutOfBoundsException e) {
+                    Log.v("NoArtistImage", e.getMessage());
+                }
+                if (artistData[2] == null) {
+                    artistData[2] = "http://www-rohan.sdsu.edu/~aty/bibliog/latex/scan/figs/gray127gamcor.png";
+                }
+
+                artistNames.add(artistData);
+                Log.v(LOG_TAG, "Spotify Artist #" + i + " " + artist.name);
+                i++;
+            }
+            return artistNames;
+        }
+    }
+
+    public class ArtistSearchAdapter extends ArrayAdapter<ArtistData> {
+        public ArtistSearchAdapter(Context context, ArrayList<ArtistData> artists) {
+            super(context, 0, artists);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            ArtistData artistData = getItem(position);
+            // Check if existing view is being reused
+            if (convertView == null) {
+                // Inflate view
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, parent, false);
+            }
+
+            // Find view to populate data
+            ImageView ivArtistImage = (ImageView) convertView.findViewById(R.id.listItemArtistImageView);
+            TextView tvArtistName = (TextView) convertView.findViewById(R.id.listItemArtistTextView);
+
+            tvArtistName.setText(artistData.name);
+            if (artistData.imageUrl != null) {
+                Picasso.with(getContext()).load(artistData.imageUrl).into(ivArtistImage);
+            } else {
+                //TODO load placeholder image
+            }
+
+            return convertView;
+        }
+    }
+
+    public class ArtistData {
+        public String id, name, imageUrl;
+
+        public ArtistData(String spotifyId, String name, String imageUrl) {
+            this.id = spotifyId;
+            this.name = name;
+            this.imageUrl = imageUrl;
         }
     }
 }
