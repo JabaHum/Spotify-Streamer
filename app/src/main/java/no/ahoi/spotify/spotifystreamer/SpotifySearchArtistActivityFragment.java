@@ -32,7 +32,7 @@ import kaaes.spotify.webapi.android.models.Image;
 /**
  * lists artists based on user input
  */
-public class SpotifySearchArtistActivityFragment extends Fragment {
+public class SpotifySearchArtistActivityFragment extends Fragment { // extend ListFragment instead?
     private static final String TAG = SpotifySearchArtistActivityFragment.class.getSimpleName();
     private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
 
