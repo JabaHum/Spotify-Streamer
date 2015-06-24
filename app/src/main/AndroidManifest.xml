@@ -20,8 +20,7 @@
         </activity>
         <activity
             android:name=".TopTracksActivity"
-            android:label="@string/title_activity_top_tracks"
-            android:parentActivityName=".SpotifyStreamerActivity" >
+            android:label="@string/title_activity_top_tracks">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="no.ahoi.spotify.spotifystreamer.SpotifyStreamerActivity" />

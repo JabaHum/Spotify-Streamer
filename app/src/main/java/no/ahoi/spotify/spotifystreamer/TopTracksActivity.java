@@ -20,7 +20,8 @@ public class TopTracksActivity extends ActionBarActivity {
         }*/
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            Log.v("works", " : " + extras.getInt("position"));
+            String[] artistData = extras.getStringArray("artistData");
+            Log.v("TopTracksActivity", " spotify ID: " + artistData[0] + " name: " + artistData[1]);
         }
     }
 

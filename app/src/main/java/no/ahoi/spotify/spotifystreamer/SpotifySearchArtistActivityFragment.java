@@ -44,7 +44,7 @@ public class SpotifySearchArtistActivityFragment extends Fragment {
     }
 
     public interface OnArtistSelectedListener {
-        public void onArtistSelected(int position);
+        public void onArtistSelected(String[] artistData);
     }
 
     @Override
@@ -104,8 +104,12 @@ public class SpotifySearchArtistActivityFragment extends Fragment {
         listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Send the event tot he host activity
-                mCallback.onArtistSelected(position);
+                // Fetch info about clicked artist and send info to host activity
+                ArtistData artistData = mSpotifySearchAdapter.getItem(position);
+                String[] artist = new String[2];
+                artist[0] = artistData.id;
+                artist[1] = artistData.name;
+                mCallback.onArtistSelected(artist);
             }
         });
 

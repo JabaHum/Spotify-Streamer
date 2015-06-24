@@ -1,15 +1,11 @@
 package no.ahoi.spotify.spotifystreamer;
 
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 
 
 public class SpotifyStreamerActivity extends AppCompatActivity implements SpotifySearchArtistActivityFragment.OnArtistSelectedListener {
@@ -25,7 +21,8 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_spotify_streamer, menu);
-        return true;
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -43,11 +40,11 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
         return super.onOptionsItemSelected(item);
     }
 
-    public void onArtistSelected(int position) {
-        Log.v("works", " position: " + position);
+    public void onArtistSelected(String[] artistData) {
+        Log.v("works", " spotify ID: " + artistData[0] + " name: " + artistData[1]);
 
         Intent intent = new Intent(getApplicationContext(), TopTracksActivity.class);
-        intent.putExtra("position", position);
+        intent.putExtra("artistData", artistData);
         startActivity(intent);
 
         /*TopTracksActivityFragment topTracksFrag = (TopTracksActivityFragment) getSupportFragmentManager().findFragmentById(R.id.topTracksFragment);
