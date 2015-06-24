@@ -1,12 +1,18 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 
 
-public class SpotifyStreamerActivity extends AppCompatActivity {
+public class SpotifyStreamerActivity extends AppCompatActivity implements SpotifySearchArtistActivityFragment.OnArtistSelectedListener {
     private static final String TAG = SpotifyStreamerActivity.class.getSimpleName();
 
     @Override
@@ -14,7 +20,6 @@ public class SpotifyStreamerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_spotify_streamer);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -36,5 +41,25 @@ public class SpotifyStreamerActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onArtistSelected(int position) {
+        Log.v("works", " position: " + position);
+
+        Intent intent = new Intent(getApplicationContext(), TopTracksActivity.class);
+        intent.putExtra("position", position);
+        startActivity(intent);
+
+        /*TopTracksActivityFragment topTracksFrag = (TopTracksActivityFragment) getSupportFragmentManager().findFragmentById(R.id.topTracksFragment);
+
+        if (topTracksFrag == null) {
+
+        }
+        FragmentManager fragmentManager = getFragmentManager();
+
+        TopTracksActivityFragment topTracksFragment = new TopTracksActivityFragment();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        int containerId = R.id.topTracksFragment;
+        */
     }
 }

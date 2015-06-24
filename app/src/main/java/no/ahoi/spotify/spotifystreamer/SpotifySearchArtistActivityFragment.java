@@ -1,8 +1,11 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -32,16 +35,33 @@ import kaaes.spotify.webapi.android.models.Image;
 /**
  * lists artists based on user input
  */
-public class SpotifySearchArtistActivityFragment extends Fragment { // extend ListFragment instead?
-    private static final String TAG = SpotifySearchArtistActivityFragment.class.getSimpleName();
+public class SpotifySearchArtistActivityFragment extends Fragment {
+    private static final String LOG_TAG = SpotifySearchArtistActivityFragment.class.getSimpleName();
     private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
+    OnArtistSelectedListener mCallback;
 
     public SpotifySearchArtistActivityFragment() {
     }
 
+    public interface OnArtistSelectedListener {
+        public void onArtistSelected(int position);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try {
+            mCallback = (OnArtistSelectedListener) activity;
+        }
+        catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement OnArtistSelectedListener");
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             final Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_search_artist, container, false);
 
         EditText searchArtists = (EditText) rootView.findViewById(R.id.searchArtists);
@@ -84,11 +104,27 @@ public class SpotifySearchArtistActivityFragment extends Fragment { // extend Li
         listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Send the event tot he host activity
+                mCallback.onArtistSelected(position);
+            }
+        });
+
+        /*listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String listItem = mSpotifySearchAdapter.getItem(position).name;
                 Toast.makeText(getActivity(), listItem, Toast.LENGTH_SHORT).show();
                 // TODO: navigate to artist top tracks view
+                if(savedInstanceState == null) {
+                    FragmentManager fragmentManager = getFragmentManager();
+
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    TopTracksActivityFragment topTracksFragment = new TopTracksActivityFragment();
+                    int containerId = R.id.topTracksFragment;
+
+                }
             }
-        });
+        });*/
 
         return rootView;
     }
