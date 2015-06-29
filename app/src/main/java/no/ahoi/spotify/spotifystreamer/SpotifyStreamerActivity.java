@@ -1,5 +1,6 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +22,24 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
         actionBar.setLogo(R.mipmap.ic_launcher);
         actionBar.setDisplayUseLogoEnabled(true);
         actionBar.setDisplayShowHomeEnabled(true);
+
+        // Check that the activity is using the layout version with the container FrameLayout
+        if (findViewById(R.id.spotifySearchFragmentContainer) != null) {
+            // If we're being restored from a previous state, then we don't need to do anything
+            // and should return or else we could end up with overlapping fragments
+            if (savedInstanceState != null) {
+                return;
+            }
+
+            // Create a new fragment to be placed in the activity layout
+            SpotifySearchArtistFragment searchArtistFragment = new SpotifySearchArtistFragment();
+            // In the case this activity was started with special instructions from an Intent,
+            // pass the Intent's extras tot he fragment as arguments.
+            searchArtistFragment.setArguments(getIntent().getExtras());
+            // Add the fragment to the 'spotifySearchFragmentContainer' FrameLayout
+            getFragmentManager().beginTransaction()
+                    .add(R.id.spotifySearchFragmentContainer, searchArtistFragment).commit();
+        }
     }
 
     @Override
@@ -49,20 +68,19 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
     public void onArtistSelected(String[] artistData) {
         Log.v("works", " spotify ID: " + artistData[0] + " name: " + artistData[1]);
 
-        Intent intent = new Intent(getApplicationContext(), TopTracksActivity.class);
-        intent.putExtra("artistData", artistData);
-        startActivity(intent);
 
-        /*TopTracksActivityFragment topTracksFrag = (TopTracksActivityFragment) getSupportFragmentManager().findFragmentById(R.id.topTracksFragment);
+        TopTracksFragment topTracksFragment = new TopTracksFragment();
+        Bundle args = new Bundle();
+        args.putStringArray("artistData", artistData);
+        topTracksFragment.setArguments(args);
 
-        if (topTracksFrag == null) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
-        }
-        FragmentManager fragmentManager = getFragmentManager();
+        // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
+        // and add the transaction to the back stack so the user can navigate to back
+        ft.replace(R.id.spotifySearchFragmentContainer, topTracksFragment);
+        ft.addToBackStack(null);
+        ft.commit();
 
-        TopTracksActivityFragment topTracksFragment = new TopTracksActivityFragment();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        int containerId = R.id.topTracksFragment;
-        */
     }
 }

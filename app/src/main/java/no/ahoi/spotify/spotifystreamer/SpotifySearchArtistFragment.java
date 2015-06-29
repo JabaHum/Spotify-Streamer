@@ -42,6 +42,7 @@ public class SpotifySearchArtistFragment extends Fragment {
     public SpotifySearchArtistFragment() {
     }
 
+    // The container Activity must implement this interface so the fragment can deliver messages
     public interface OnArtistSelectedListener {
         public void onArtistSelected(String[] artistData);
     }
@@ -50,6 +51,8 @@ public class SpotifySearchArtistFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
+        // This makes sure that the container activity has implemented
+        // the callback interface and throws an exception otherwise.
         try {
             mCallback = (OnArtistSelectedListener) activity;
         }
@@ -109,15 +112,6 @@ public class SpotifySearchArtistFragment extends Fragment {
                 artist[0] = artistData.id;
                 artist[1] = artistData.name;
                 mCallback.onArtistSelected(artist);
-
-                /*TopTracksActivityFragment topTracksFragment = new TopTracksActivityFragment();
-                Bundle args = new Bundle();
-                args.putInt("topTracksFragmentPosition", position);
-                topTracksFragment.setArguments(args);
-
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
-                transaction.replace(R.id.topTracksFragment, topTracksFragment);
-                */
             }
         });
 
