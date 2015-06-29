@@ -34,12 +34,12 @@ import kaaes.spotify.webapi.android.models.Image;
 /**
  * lists artists based on user input
  */
-public class SpotifySearchArtistActivityFragment extends Fragment {
-    private static final String LOG_TAG = SpotifySearchArtistActivityFragment.class.getSimpleName();
+public class SpotifySearchArtistFragment extends Fragment {
+    private static final String LOG_TAG = SpotifySearchArtistFragment.class.getSimpleName();
     private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
     OnArtistSelectedListener mCallback;
 
-    public SpotifySearchArtistActivityFragment() {
+    public SpotifySearchArtistFragment() {
     }
 
     public interface OnArtistSelectedListener {
@@ -120,23 +120,6 @@ public class SpotifySearchArtistActivityFragment extends Fragment {
                 */
             }
         });
-
-        /*listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String listItem = mSpotifySearchAdapter.getItem(position).name;
-                Toast.makeText(getActivity(), listItem, Toast.LENGTH_SHORT).show();
-                // TODO: navigate to artist top tracks view
-                if(savedInstanceState == null) {
-                    FragmentManager fragmentManager = getFragmentManager();
-
-                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    TopTracksActivityFragment topTracksFragment = new TopTracksActivityFragment();
-                    int containerId = R.id.topTracksFragment;
-
-                }
-            }
-        });*/
 
         return rootView;
     }

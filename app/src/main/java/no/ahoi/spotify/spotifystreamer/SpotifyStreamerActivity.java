@@ -9,7 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
-public class SpotifyStreamerActivity extends AppCompatActivity implements SpotifySearchArtistActivityFragment.OnArtistSelectedListener {
+public class SpotifyStreamerActivity extends AppCompatActivity implements SpotifySearchArtistFragment.OnArtistSelectedListener {
     private static final String TAG = SpotifyStreamerActivity.class.getSimpleName();
 
     @Override

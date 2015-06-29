@@ -19,11 +19,11 @@ import java.util.ArrayList;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class TopTracksActivityFragment extends Fragment {
-    private static final String LOG_TAG = TopTracksActivityFragment.class.getSimpleName();
+public class TopTracksFragment extends Fragment {
+    private static final String LOG_TAG = TopTracksFragment.class.getSimpleName();
     private ArrayAdapter<TopTracksData> mSpotifyTopTracksAdapter;
 
-    public TopTracksActivityFragment() {
+    public TopTracksFragment() {
     }
 
     @Override
