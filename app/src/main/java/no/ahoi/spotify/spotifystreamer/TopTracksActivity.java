@@ -1,5 +1,6 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,16 +14,35 @@ public class TopTracksActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_top_tracks);
-        /*if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.topTracksFragment, new TopTracksActivityFragment())
-                    .commit();
-        }*/
+
+        // Place logo on action bar
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setLogo(R.mipmap.ic_launcher);
+        actionBar.setDisplayUseLogoEnabled(true);
+        actionBar.setDisplayShowHomeEnabled(true);
+
+        String[] artistData = null;
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            String[] artistData = extras.getStringArray("artistData");
+            artistData = extras.getStringArray("artistData");
             Log.v("TopTracksActivity", " spotify ID: " + artistData[0] + " name: " + artistData[1]);
+            actionBar.setTitle(artistData[1]); // Change action bar title to artist name
+
         }
+        // TODO Delete this activity and send data directly to the other fragment.
+        /*if (savedInstanceState == null) {
+            TopTracksActivityFragment topTracksFragment = new TopTracksActivityFragment();
+            if (artistData != null) {
+                Bundle args = new Bundle();
+                args.putString("spotifyId", artistData[0]);
+                topTracksFragment.setArguments(args);
+            }
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.topTracksFragment, topTracksFragment)
+                    .commit();
+        }*/
+
+
     }
 
 

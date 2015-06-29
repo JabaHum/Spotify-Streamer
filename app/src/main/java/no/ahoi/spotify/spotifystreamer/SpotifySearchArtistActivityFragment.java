@@ -2,7 +2,6 @@ package no.ahoi.spotify.spotifystreamer;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -110,6 +109,15 @@ public class SpotifySearchArtistActivityFragment extends Fragment {
                 artist[0] = artistData.id;
                 artist[1] = artistData.name;
                 mCallback.onArtistSelected(artist);
+
+                /*TopTracksActivityFragment topTracksFragment = new TopTracksActivityFragment();
+                Bundle args = new Bundle();
+                args.putInt("topTracksFragmentPosition", position);
+                topTracksFragment.setArguments(args);
+
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                transaction.replace(R.id.topTracksFragment, topTracksFragment);
+                */
             }
         });
 
