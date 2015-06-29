@@ -1,5 +1,6 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.content.Context;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.content.Intent;
@@ -8,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 
 public class SpotifyStreamerActivity extends AppCompatActivity implements SpotifySearchArtistFragment.OnArtistSelectedListener {
@@ -68,6 +71,10 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
     public void onArtistSelected(String[] artistData) {
         Log.v("works", " spotify ID: " + artistData[0] + " name: " + artistData[1]);
 
+        // Hide keyboard
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        imm.hideSoftInputFromWindow(findViewById(R.id.searchArtists).getWindowToken(), 0);
 
         TopTracksFragment topTracksFragment = new TopTracksFragment();
         Bundle args = new Bundle();
@@ -77,7 +84,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
         // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
-        // and add the transaction to the back stack so the user can navigate to back
+        // and add the transaction to the back stack so the user can navigate back
         ft.replace(R.id.spotifySearchFragmentContainer, topTracksFragment);
         ft.addToBackStack(null);
         ft.commit();
