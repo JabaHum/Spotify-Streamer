@@ -1,5 +1,6 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -15,19 +16,20 @@ import android.widget.EditText;
 
 public class SpotifyStreamerActivity extends AppCompatActivity implements SpotifySearchArtistFragment.OnArtistSelectedListener {
     private static final String TAG = SpotifyStreamerActivity.class.getSimpleName();
+    ActionBar mActionBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_spotify_streamer);
 
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setLogo(R.mipmap.ic_launcher);
-        actionBar.setDisplayUseLogoEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
+        mActionBar = getSupportActionBar();
+        mActionBar.setLogo(R.mipmap.ic_launcher);
+        mActionBar.setDisplayUseLogoEnabled(true);
+        mActionBar.setDisplayShowHomeEnabled(true);
 
         // Check that the activity is using the layout version with the container FrameLayout
-        if (findViewById(R.id.spotifySearchFragmentContainer) != null) {
+        if (findViewById(R.id.spotifySearchFragmentPlaceholder) != null) {
             // If we're being restored from a previous state, then we don't need to do anything
             // and should return or else we could end up with overlapping fragments
             if (savedInstanceState != null) {
@@ -41,7 +43,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
             searchArtistFragment.setArguments(getIntent().getExtras());
             // Add the fragment to the 'spotifySearchFragmentContainer' FrameLayout
             getFragmentManager().beginTransaction()
-                    .add(R.id.spotifySearchFragmentContainer, searchArtistFragment).commit();
+                    .add(R.id.spotifySearchFragmentPlaceholder, searchArtistFragment).commit();
         }
     }
 
@@ -70,7 +72,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
 
     public void onArtistSelected(String[] artistData) {
         Log.v("works", " spotify ID: " + artistData[0] + " name: " + artistData[1]);
-
+        
         // Hide keyboard
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -85,9 +87,25 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
 
         // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        ft.replace(R.id.spotifySearchFragmentContainer, topTracksFragment);
+        ft.replace(R.id.spotifySearchFragmentPlaceholder, topTracksFragment);
         ft.addToBackStack(null);
         ft.commit();
 
+        setActionBarData(getString(R.string.top_tracks), artistData[1]);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        resetActionBarData();
+    }
+
+    protected void setActionBarData(String title, String subtitle) {
+        mActionBar.setTitle(title);
+        mActionBar.setSubtitle(subtitle);
+    }
+    protected void resetActionBarData() {
+        mActionBar.setTitle(getString(R.string.app_name));
+        mActionBar.setSubtitle(null);
     }
 }
