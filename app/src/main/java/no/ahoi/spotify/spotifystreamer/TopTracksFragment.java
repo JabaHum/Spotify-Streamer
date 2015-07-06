@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -43,14 +44,12 @@ public class TopTracksFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
-        TopTracksData topTracks = new TopTracksData("null", "The Scientist", "A Rush Of Blood To The Head", "http://a5.mzstatic.com/us/r1000/050/Music/y2004/m06/d24/h03/s06.tkwjbvaf.600x600-75.jpg");
         ArrayList<TopTracksData> arrayOfTracks = new ArrayList<>();
         mTopTracksAdapter = new TopTracksSearchAdapter(getActivity(), arrayOfTracks);
 
+        // Find a reference to the fragments ListView to attach the adapter
         ListView listTracks = (ListView) rootView.findViewById(R.id.listTracks);
         listTracks.setAdapter(mTopTracksAdapter);
-        //mTopTracksAdapter.addAll(topTracks);
-        //mTopTracksAdapter.add(topTracks);
 
         if (this.getArguments() != null) {
             Bundle bundle = this.getArguments();
@@ -60,6 +59,14 @@ public class TopTracksFragment extends Fragment {
         } else {
             Log.v(LOG_TAG, " Could not fetch arguments (spotify ID) from activity");
         }
+
+        listTracks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO Play the selected track
+                Toast.makeText(getActivity(), "Play " + mTopTracksAdapter.getItem(position).trackTitle + "...", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return rootView;
     }
@@ -92,7 +99,7 @@ public class TopTracksFragment extends Fragment {
                 }
 
                 if (mTopTracksAdapter.getCount() == 0) {
-                    Toast.makeText(getActivity(), "Could not find artist.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Could not find artist's top tracks.", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -101,32 +108,23 @@ public class TopTracksFragment extends Fragment {
             int i = 0;
             ArrayList<String[]> topTracksData = new ArrayList<String[]>();
             for(Track track : topTracksResult.tracks) {
+                i++;
                 String[] trackData = new String[4]; // Temporary array
 
                 trackData[0] = track.artists.get(0).id; // Save spotify ID
                 trackData[1] = track.album.name; // Save artist name
                 trackData[2] = track.name; // Save track name
-                try {
-                    for (Image image : track.album.images) {
-                        if (image.height > 200 || image.width > 200) { // image sizes are always in the order: big to small
-                            trackData[3] = image.url; // Save image url
-                        }
-                        else if (trackData[3] == null) {
-                            trackData[3] = image.url; // Fallback to smallest image.
-                            break;
-                        }
+                for (Image image : track.album.images) {
+                    if (image.height > 200 || image.width > 200) { // image sizes are always in the order: big to small
+                        trackData[3] = image.url; // Save image url
+                    }
+                    else if (trackData[3] == null) {
+                        trackData[3] = image.url; // Fallback to a small image.
+                        break;
                     }
                 }
-                catch (IndexOutOfBoundsException e) {
-                    Log.v("NoArtistImage", e.getMessage());
-                }
-                if (trackData[3] == null) { // TODO load static empty image
-                    trackData[3] = "http://www-rohan.sdsu.edu/~aty/bibliog/latex/scan/figs/gray127gamcor.png";
-                }
-
                 topTracksData.add(trackData); // Add temporary array to ArrayList
                 Log.v(LOG_TAG, "Spotify Track #" + i + " " + trackData[2]);
-                i++;
             }
             return topTracksData;
         }
@@ -156,9 +154,9 @@ public class TopTracksFragment extends Fragment {
             tvTrackTitle.setText(topTracksData.trackTitle);
 
             if (topTracksData.imageUrl != null) {
-                Picasso.with(getContext()).load(topTracksData.imageUrl).into(ivAlbumImage);
+                Picasso.with(getContext()).load(topTracksData.imageUrl).placeholder(R.mipmap.no_image).into(ivAlbumImage);
             } else {
-                //TODO load placeholder image?
+                Picasso.with(getContext()).load(R.mipmap.no_image).into(ivAlbumImage);
             }
 
             return convertView;

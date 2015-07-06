@@ -2,7 +2,6 @@ package no.ahoi.spotify.spotifystreamer;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -91,16 +90,11 @@ public class SpotifySearchArtistFragment extends Fragment {
             }
         });
 
-        // Dummy data for the ListView
-        ArtistData artist = new ArtistData("null", "Search for an artist", "https://cdn0.iconfinder.com/data/icons/glyph_set/128/search.png");
-
-        ArrayList<ArtistData> arrayOfArtists = new ArrayList<ArtistData>();
-        mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), arrayOfArtists);
+        mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), new ArrayList<ArtistData>());
 
         // Find a reference to the fragments ListView to attach the adapter
         ListView listArtists = (ListView) rootView.findViewById(R.id.listArtists);
         listArtists.setAdapter(mSpotifySearchAdapter);
-        mSpotifySearchAdapter.addAll(artist);
 
 
         listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -157,21 +151,13 @@ public class SpotifySearchArtistFragment extends Fragment {
 
                 artistData[0] = artist.id; // Get spotify ID
                 artistData[1] = artist.name; // Save artist name
-                try {
-                    for (Image image : artist.images) {
-                        if (image.height > 200 || image.width > 200) { // image sizes are always in the order: big to small
-                            artistData[2] = image.url; // Get image url
-                        }
-                        else if (artistData[2] == null) { // Fallback to smallest image.
-                            artistData[2] = image.url;
-                        }
+                for (Image image : artist.images) {
+                    if (image.height > 200 || image.width > 200) { // image sizes are always in the order: big to small
+                        artistData[2] = image.url; // Get image url
                     }
-                }
-                catch (IndexOutOfBoundsException e) {
-                    Log.v("NoArtistImage", e.getMessage());
-                }
-                if (artistData[2] == null) {
-                    artistData[2] = "http://www-rohan.sdsu.edu/~aty/bibliog/latex/scan/figs/gray127gamcor.png";
+                    else if (artistData[2] == null) { // Fallback to smallest image.
+                        artistData[2] = image.url;
+                    }
                 }
 
                 artistNames.add(artistData);
@@ -203,10 +189,12 @@ public class SpotifySearchArtistFragment extends Fragment {
 
             tvArtistName.setText(artistData.name);
             if (artistData.imageUrl != null) {
-                Picasso.with(getContext()).load(artistData.imageUrl).into(ivArtistImage);
+                Picasso.with(getContext()).load(artistData.imageUrl).placeholder(R.mipmap.no_image).into(ivArtistImage);
             } else {
-                //TODO load placeholder image
+                Picasso.with(getContext()).load(R.mipmap.no_image).into(ivArtistImage);
             }
+
+            Picasso.with(getContext()).load(artistData.imageUrl).placeholder(R.mipmap.no_image).into(ivArtistImage);
 
             return convertView;
         }
