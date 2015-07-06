@@ -50,6 +50,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // TODO Let user select country from options menu
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_spotify_streamer, menu);
 
