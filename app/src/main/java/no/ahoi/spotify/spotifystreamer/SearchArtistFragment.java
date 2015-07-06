@@ -78,8 +78,7 @@ public class SearchArtistFragment extends Fragment {
                 if (s.length() > 0) {
                     FetchArtistsTask artists = new FetchArtistsTask();
                     artists.execute(s.toString());
-                }
-                else {
+                } else {
                     mSpotifySearchAdapter.clear();
                 }
             }

@@ -12,7 +12,9 @@
         android:id="@+id/searchArtists"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:hint="@string/search_artist"/>
+        android:hint="@string/search_artist"
+        android:imeOptions="actionDone"
+        android:singleLine="true" />
 
     <ListView
         android:layout_width="match_parent"
