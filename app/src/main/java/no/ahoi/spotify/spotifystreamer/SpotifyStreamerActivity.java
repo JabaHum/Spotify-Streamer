@@ -11,7 +11,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
 
-public class SpotifyStreamerActivity extends AppCompatActivity implements SpotifySearchArtistFragment.OnArtistSelectedListener {
+public class SpotifyStreamerActivity extends AppCompatActivity implements SearchArtistFragment.OnArtistSelectedListener {
     private static final String TAG = SpotifyStreamerActivity.class.getSimpleName();
     ActionBar mActionBar;
 
@@ -30,7 +30,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
         }
 
         // Check that the activity is using the layout version with the container FrameLayout
-        if (findViewById(R.id.spotifySearchFragmentPlaceholder) != null) {
+        if (findViewById(R.id.SearchFragmentPlaceholder) != null) {
             // If we're being restored from a previous state, then we don't need to do anything
             // and should return or else we could end up with overlapping fragments
             if (savedInstanceState != null) {
@@ -38,13 +38,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
             }
 
             // Create a new fragment to be placed in the activity layout
-            SpotifySearchArtistFragment searchArtistFragment = new SpotifySearchArtistFragment();
+            SearchArtistFragment searchArtistFragment = new SearchArtistFragment();
             // In the case this activity was started with special instructions from an Intent,
             // pass the Intent's extras tot he fragment as arguments.
             searchArtistFragment.setArguments(getIntent().getExtras());
             // Add the fragment to the 'spotifySearchFragmentContainer' FrameLayout
             getFragmentManager().beginTransaction()
-                    .add(R.id.spotifySearchFragmentPlaceholder, searchArtistFragment).commit();
+                    .add(R.id.SearchFragmentPlaceholder, searchArtistFragment).commit();
         }
     }
 
@@ -88,7 +88,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Spotif
 
         // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        ft.replace(R.id.spotifySearchFragmentPlaceholder, topTracksFragment);
+        ft.replace(R.id.SearchFragmentPlaceholder, topTracksFragment);
         ft.addToBackStack(null);
         ft.commit();
 
