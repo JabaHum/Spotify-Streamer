@@ -91,7 +91,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         // and add the transaction to the back stack so the user can navigate back
         ft.replace(R.id.SearchFragmentPlaceholder, topTracksFragment);
         ft.addToBackStack(null);
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
         ft.commit();
+        /*
+            ISSUE:
+            TopTracksFragment is displayed on top of SearchArtistFragment. I set background color on
+            TopTracksFragment as a temporary fix.
+        */
 
         setActionBarData(getString(R.string.top_tracks), artistData[1]);
     }
