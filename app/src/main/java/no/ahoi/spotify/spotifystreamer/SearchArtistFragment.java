@@ -43,7 +43,7 @@ public class SearchArtistFragment extends Fragment {
 
     // The container Activity must implement this interface so the fragment can deliver messages
     public interface OnArtistSelectedListener {
-        public void onArtistSelected(String[] artistData);
+        void onArtistSelected(String[] artistData);
     }
 
     @Override
