@@ -83,7 +83,7 @@ public class TopTracksFragment extends Fragment {
             SpotifyApi api = new SpotifyApi();
             SpotifyService spotify = api.getService();
             Map<String, Object> options = new HashMap<>();
-            options.put(spotify.COUNTRY, Locale.getDefault().getCountry());
+            options.put("country", Locale.getDefault().getCountry());
             Tracks results = spotify.getArtistTopTrack(params[0], options);
 
             return getTopTracksData(results);
@@ -94,7 +94,7 @@ public class TopTracksFragment extends Fragment {
             if (result != null) {
                 mTopTracksAdapter.clear();
                 for(String[] topTrackData : result) {
-                    TopTracksData topTrack = new TopTracksData(topTrackData[0], topTrackData[1], topTrackData[2], topTrackData[3]);
+                    TopTracksData topTrack = new TopTracksData(topTrackData[0], topTrackData[1], topTrackData[2], topTrackData[3], topTrackData[4]);
                     mTopTracksAdapter.add(topTrack);
                 }
 
@@ -106,20 +106,29 @@ public class TopTracksFragment extends Fragment {
 
         private ArrayList<String[]> getTopTracksData(Tracks topTracksResult) {
             int i = 0;
-            ArrayList<String[]> topTracksData = new ArrayList<String[]>();
+            ArrayList<String[]> topTracksData = new ArrayList<>();
             for(Track track : topTracksResult.tracks) {
                 i++;
-                String[] trackData = new String[4]; // Temporary array
+                String[] trackData = new String[5]; // Temporary array
 
                 trackData[0] = track.artists.get(0).id; // Save spotify ID
                 trackData[1] = track.album.name; // Save artist name
                 trackData[2] = track.name; // Save track name
+
+                // Save largest album image possible and largest album image over 200 x 200 px.
+                // Image sizes are always in order: large to small
                 for (Image image : track.album.images) {
-                    if (image.height > 200 || image.width > 200) { // image sizes are always in the order: big to small
-                        trackData[3] = image.url; // Save image url
+                    if (image.height > 200 || image.width > 200) {
+                        trackData[3] = image.url; // Save and overwrite small album image url
+                        if (trackData[4] == null) {
+                            trackData[4] = image.url; // Save largest album image url
+                        }
                     }
                     else if (trackData[3] == null) {
                         trackData[3] = image.url; // Fallback to a small image.
+                        if (trackData[4] == null) {
+                            trackData[4] = image.url;
+                        }
                         break;
                     }
                 }
@@ -153,8 +162,8 @@ public class TopTracksFragment extends Fragment {
             tvAlbumTitle.setText(topTracksData.albumTitle);
             tvTrackTitle.setText(topTracksData.trackTitle);
 
-            if (topTracksData.imageUrl != null) {
-                Picasso.with(getContext()).load(topTracksData.imageUrl).placeholder(R.mipmap.no_image).into(ivAlbumImage);
+            if (topTracksData.albumImageUrlSmall != null) {
+                Picasso.with(getContext()).load(topTracksData.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(ivAlbumImage);
             } else {
                 Picasso.with(getContext()).load(R.mipmap.no_image).into(ivAlbumImage);
             }
@@ -164,13 +173,14 @@ public class TopTracksFragment extends Fragment {
     }
 
     public class TopTracksData {
-        public String id, albumTitle, trackTitle, imageUrl;
+        public String id, albumTitle, trackTitle, albumImageUrlLarge, albumImageUrlSmall;
 
-        public TopTracksData(String spotifyId, String albumTitle, String trackTitle, String imageUrl) {
+        public TopTracksData(String spotifyId, String albumTitle, String trackTitle, String albumImageUrlLarge, String albumImageUrlSmall) {
             this.id = spotifyId;
             this.albumTitle = albumTitle;
             this.trackTitle = trackTitle;
-            this.imageUrl = imageUrl;
+            this.albumImageUrlLarge = albumImageUrlLarge;
+            this.albumImageUrlSmall = albumImageUrlSmall;
         }
     }
 }

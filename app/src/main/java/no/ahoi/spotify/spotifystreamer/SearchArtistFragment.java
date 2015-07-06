@@ -147,6 +147,7 @@ public class SearchArtistFragment extends Fragment {
             int i = 0;
             ArrayList<String[]> artistNames = new ArrayList<>();
             for(Artist artist : spotifyArtists.artists.items) {
+                i++;
                 String[] artistData = new String[3];
 
                 artistData[0] = artist.id; // Get spotify ID
@@ -162,7 +163,6 @@ public class SearchArtistFragment extends Fragment {
 
                 artistNames.add(artistData);
                 Log.v(LOG_TAG, "Spotify Artist #" + i + " " + artist.name);
-                i++;
             }
             return artistNames;
         }
