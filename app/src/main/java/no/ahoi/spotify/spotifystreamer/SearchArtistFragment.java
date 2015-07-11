@@ -1,7 +1,7 @@
 package no.ahoi.spotify.spotifystreamer;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,15 +28,21 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Image;
+import retrofit.RetrofitError;
 
 
 /**
  * lists artists based on user input
  */
+
+// TODO: Save results so that you don't have to redo Spotify Web API call when navigating back from TopTracksFragment
+
 public class SearchArtistFragment extends Fragment {
     private static final String LOG_TAG = SearchArtistFragment.class.getSimpleName();
     private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
-    OnArtistSelectedListener mCallback;
+    private OnArtistSelectedListener mCallback;
+    private ArrayList<ArtistData> mArtistData;
+    private Boolean mExecuteAdapter;
 
     public SearchArtistFragment() {
     }
@@ -65,6 +71,19 @@ public class SearchArtistFragment extends Fragment {
                              final Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_search_artist, container, false);
 
+        mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), new ArrayList<ArtistData>());
+        mExecuteAdapter = true;
+        if (savedInstanceState != null && savedInstanceState.containsKey("artistData")) {
+            mArtistData = savedInstanceState.getParcelableArrayList("artistData");
+            // When navigating back to this fragment with back button press, mArtistData's content
+            // will be null, but the key 'artistData' still exist.
+            if (mArtistData != null) {
+                mExecuteAdapter = false;
+                for (ArtistData artist : mArtistData) {
+                    mSpotifySearchAdapter.add(artist);
+                }
+            }
+        }
         EditText searchArtists = (EditText) rootView.findViewById(R.id.searchArtists);
 
         searchArtists.addTextChangedListener(new TextWatcher() {
@@ -76,8 +95,14 @@ public class SearchArtistFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() > 0) {
-                    FetchArtistsTask artists = new FetchArtistsTask();
-                    artists.execute(s.toString());
+                    // mExecuteAdapter is used to prevent adapter execution after screen rotation
+                    if (mExecuteAdapter) {
+                        FetchArtistsTask artists = new FetchArtistsTask();
+                        artists.execute(s.toString());
+                        Log.v("artistTask", " executing..");
+                    } else {
+                        mExecuteAdapter = false;
+                    }
                 } else {
                     mSpotifySearchAdapter.clear();
                 }
@@ -89,12 +114,9 @@ public class SearchArtistFragment extends Fragment {
             }
         });
 
-        mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), new ArrayList<ArtistData>());
-
         // Find a reference to the fragments ListView to attach the adapter
         ListView listArtists = (ListView) rootView.findViewById(R.id.listArtists);
         listArtists.setAdapter(mSpotifySearchAdapter);
-
 
         listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -102,13 +124,21 @@ public class SearchArtistFragment extends Fragment {
                 // Fetch info about clicked artist and send info to host activity
                 ArtistData artistData = mSpotifySearchAdapter.getItem(position);
                 String[] artist = new String[2];
-                artist[0] = artistData.id;
+                artist[0] = artistData.spotifyId;
                 artist[1] = artistData.name;
                 mCallback.onArtistSelected(artist);
             }
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mArtistData != null && !mArtistData.isEmpty()) {
+            outState.putParcelableArrayList("artistData", mArtistData);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     public class FetchArtistsTask extends AsyncTask<String, Void, ArrayList<String[]>> {
@@ -120,10 +150,16 @@ public class SearchArtistFragment extends Fragment {
             if (params.length == 0) {
                 return null;
             }
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService spotify = api.getService();
-            ArtistsPager results = spotify.searchArtists(params[0]);
-
+            ArtistsPager results;
+            try {
+                SpotifyApi api = new SpotifyApi();
+                SpotifyService spotify = api.getService();
+                results = spotify.searchArtists(params[0]);
+            }
+            catch (RetrofitError e) {
+                Log.v(LOG_TAG + "->doInBackground()", e.toString() + " - Error kind: " + e.getKind());
+                return null;
+            }
             return getArtistData(results);
         }
 
@@ -131,14 +167,21 @@ public class SearchArtistFragment extends Fragment {
         protected void onPostExecute(ArrayList<String[]> result) {
             if (result != null) {
                 mSpotifySearchAdapter.clear();
+                mArtistData = new ArrayList<>();
+                int i = 0;
                 for(String[] artistData : result) {
                     ArtistData artist = new ArtistData(artistData[0], artistData[1], artistData[2]);
                     mSpotifySearchAdapter.add(artist);
+                    mArtistData.add(i, artist);
+                    i++;
                 }
 
                 if (mSpotifySearchAdapter.getCount() == 0) {
                     Toast.makeText(getActivity(), "Could not find artist.", Toast.LENGTH_SHORT).show();
                 }
+            }
+            else {
+                Toast.makeText(getActivity(), "Could not fetch artist - please check your internet connection", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -196,16 +239,6 @@ public class SearchArtistFragment extends Fragment {
             Picasso.with(getContext()).load(artistData.imageUrl).placeholder(R.mipmap.no_image).into(ivArtistImage);
 
             return convertView;
-        }
-    }
-
-    public class ArtistData {
-        public String id, name, imageUrl;
-
-        public ArtistData(String spotifyId, String name, String imageUrl) {
-            this.id = spotifyId;
-            this.name = name;
-            this.imageUrl = imageUrl;
         }
     }
 }

@@ -27,14 +27,16 @@ import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.RetrofitError;
 
 
 /**
- * A placeholder fragment containing a simple view.
+ * lists top tracks for an artist by fetching data from the Spotify Web API
  */
 public class TopTracksFragment extends Fragment {
     private static final String LOG_TAG = TopTracksFragment.class.getSimpleName();
     private ArrayAdapter<TopTracksData> mTopTracksAdapter;
+    private ArrayList<TopTracksData> mTopTracksData;
 
     public TopTracksFragment() {
     }
@@ -44,14 +46,17 @@ public class TopTracksFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
-        ArrayList<TopTracksData> arrayOfTracks = new ArrayList<>();
-        mTopTracksAdapter = new TopTracksSearchAdapter(getActivity(), arrayOfTracks);
+        mTopTracksAdapter = new TopTracksSearchAdapter(getActivity(), new ArrayList<TopTracksData>());
 
-        // Find a reference to the fragments ListView to attach the adapter
-        ListView listTracks = (ListView) rootView.findViewById(R.id.listTracks);
-        listTracks.setAdapter(mTopTracksAdapter);
+        // Populate list if we already have topTracksData, otherwise fetch it from the spotify API.
+        if (savedInstanceState != null && savedInstanceState.containsKey("topTracksData")) {
+            mTopTracksData = savedInstanceState.getParcelableArrayList("topTracksData");
+            for(TopTracksData topTrack : mTopTracksData) {
+                mTopTracksAdapter.add(topTrack);
+            }
 
-        if (this.getArguments() != null) {
+        } else if (this.getArguments() != null) {
+            // Expects artist Spotify ID
             Bundle bundle = this.getArguments();
             String[] artistData = bundle.getStringArray("artistData");
             FetchTopTracksTask topTracksTask = new FetchTopTracksTask();
@@ -60,15 +65,27 @@ public class TopTracksFragment extends Fragment {
             Log.v(LOG_TAG, " Could not fetch arguments (spotify ID) from activity");
         }
 
+        // Find a reference to the fragments ListView to attach the adapter
+        ListView listTracks = (ListView) rootView.findViewById(R.id.listTracks);
+        listTracks.setAdapter(mTopTracksAdapter);
+
         listTracks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO Play the selected track
-                Toast.makeText(getActivity(), "Play " + mTopTracksAdapter.getItem(position).trackTitle + "...", Toast.LENGTH_SHORT).show();
+            // TODO Play the selected track
+            Toast.makeText(getActivity(), "Play " + mTopTracksAdapter.getItem(position).trackTitle + "...", Toast.LENGTH_SHORT).show();
             }
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mTopTracksData != null && !mTopTracksData.isEmpty()) {
+            outState.putParcelableArrayList("topTracksData", mTopTracksData);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     public class FetchTopTracksTask extends AsyncTask<String, Void, ArrayList<String[]>> {
@@ -80,12 +97,19 @@ public class TopTracksFragment extends Fragment {
             if (params.length == 0) {
                 return null;
             }
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService spotify = api.getService();
-            Map<String, Object> options = new HashMap<>();
-            options.put("country", Locale.getDefault().getCountry());
-            Tracks results = spotify.getArtistTopTrack(params[0], options);
-
+            Tracks results;
+            try {
+                SpotifyApi api = new SpotifyApi();
+                SpotifyService spotify = api.getService();
+                // Pass in country as option (required by getArtistTopTracks)
+                Map<String, Object> options = new HashMap<>();
+                options.put("country", Locale.getDefault().getCountry());
+                results = spotify.getArtistTopTrack(params[0], options);
+            }
+            catch (RetrofitError e) {
+                Log.v(LOG_TAG + "->doInBackground()", e.toString() + " - Error kind: " + e.getKind());
+                return null;
+            }
             return getTopTracksData(results);
         }
 
@@ -93,14 +117,21 @@ public class TopTracksFragment extends Fragment {
         protected void onPostExecute(ArrayList<String[]> result) {
             if (result != null) {
                 mTopTracksAdapter.clear();
+                mTopTracksData = new ArrayList<>();
+                int i = 0;
                 for(String[] topTrackData : result) {
                     TopTracksData topTrack = new TopTracksData(topTrackData[0], topTrackData[1], topTrackData[2], topTrackData[3], topTrackData[4]);
                     mTopTracksAdapter.add(topTrack);
+                    mTopTracksData.add(i, topTrack);
+                    i++;
                 }
 
                 if (mTopTracksAdapter.getCount() == 0) {
                     Toast.makeText(getActivity(), "Could not find artist's top tracks.", Toast.LENGTH_SHORT).show();
                 }
+            }
+            else {
+                Toast.makeText(getActivity(), "Could not fetch artist - please check your internet connection", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -172,15 +203,5 @@ public class TopTracksFragment extends Fragment {
         }
     }
 
-    public class TopTracksData {
-        public String id, albumTitle, trackTitle, albumImageUrlLarge, albumImageUrlSmall;
 
-        public TopTracksData(String spotifyId, String albumTitle, String trackTitle, String albumImageUrlLarge, String albumImageUrlSmall) {
-            this.id = spotifyId;
-            this.albumTitle = albumTitle;
-            this.trackTitle = trackTitle;
-            this.albumImageUrlLarge = albumImageUrlLarge;
-            this.albumImageUrlSmall = albumImageUrlSmall;
-        }
-    }
 }

@@ -43,7 +43,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             // pass the Intent's extras tot he fragment as arguments.
             searchArtistFragment.setArguments(getIntent().getExtras());
             // Add the fragment to the 'spotifySearchFragmentContainer' FrameLayout
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .add(R.id.SearchFragmentPlaceholder, searchArtistFragment).commit();
         }
     }
@@ -85,19 +85,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         args.putStringArray("artistData", artistData);
         topTracksFragment.setArguments(args);
 
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-
         // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        ft.replace(R.id.SearchFragmentPlaceholder, topTracksFragment);
-        ft.addToBackStack(null);
-        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        ft.commit();
-        /*
-            ISSUE:
-            TopTracksFragment is displayed on top of SearchArtistFragment. I set background color on
-            TopTracksFragment as a temporary fix.
-        */
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.SearchFragmentPlaceholder, topTracksFragment)
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .commit();
 
         setActionBarData(getString(R.string.top_tracks), artistData[1]);
     }
