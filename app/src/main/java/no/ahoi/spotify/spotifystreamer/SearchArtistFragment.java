@@ -151,9 +151,9 @@ public class SearchArtistFragment extends Fragment {
                 return null;
             }
             ArtistsPager results;
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
             try {
-                SpotifyApi api = new SpotifyApi();
-                SpotifyService spotify = api.getService();
                 results = spotify.searchArtists(params[0]);
             }
             catch (RetrofitError e) {

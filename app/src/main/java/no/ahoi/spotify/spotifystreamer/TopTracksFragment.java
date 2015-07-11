@@ -98,12 +98,12 @@ public class TopTracksFragment extends Fragment {
                 return null;
             }
             Tracks results;
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+            // Pass in country as option (required by getArtistTopTracks)
+            Map<String, Object> options = new HashMap<>();
+            options.put("country", Locale.getDefault().getCountry());
             try {
-                SpotifyApi api = new SpotifyApi();
-                SpotifyService spotify = api.getService();
-                // Pass in country as option (required by getArtistTopTracks)
-                Map<String, Object> options = new HashMap<>();
-                options.put("country", Locale.getDefault().getCountry());
                 results = spotify.getArtistTopTrack(params[0], options);
             }
             catch (RetrofitError e) {
