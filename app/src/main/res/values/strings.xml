@@ -5,4 +5,5 @@
     <string name="empty_artists_search">No artists found.</string>
     <string name="search_artist">Search artist names</string>
     <string name="top_tracks">Top 10 Tracks</string>
+    <string name="play_time">0.00</string>
 </resources>
