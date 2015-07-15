@@ -4,14 +4,15 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class TopTracksData implements Parcelable {
-    String id, albumTitle, trackTitle, albumImageUrlLarge, albumImageUrlSmall;
+    String id, albumTitle, trackTitle, albumImageUrlLarge, albumImageUrlSmall, previewUrl;
 
-    public TopTracksData(String spotifyId, String albumTitle, String trackTitle, String albumImageUrlLarge, String albumImageUrlSmall) {
+    public TopTracksData(String spotifyId, String albumTitle, String trackTitle, String albumImageUrlLarge, String albumImageUrlSmall, String previewUrl) {
         this.id = spotifyId;
         this.albumTitle = albumTitle;
         this.trackTitle = trackTitle;
         this.albumImageUrlLarge = albumImageUrlLarge;
         this.albumImageUrlSmall = albumImageUrlSmall;
+        this.previewUrl = previewUrl;
     }
 
     private TopTracksData(Parcel in) {
@@ -20,6 +21,7 @@ public class TopTracksData implements Parcelable {
         trackTitle = in.readString();
         albumImageUrlLarge = in.readString();
         albumImageUrlSmall = in.readString();
+        previewUrl = in.readString();
     }
 
     public int describeContents() {
@@ -32,6 +34,7 @@ public class TopTracksData implements Parcelable {
         out.writeString(trackTitle);
         out.writeString(albumImageUrlLarge);
         out.writeString(albumImageUrlSmall);
+        out.writeString(previewUrl);
     }
 
     public static final Parcelable.Creator<TopTracksData> CREATOR = new Parcelable.Creator<TopTracksData>() {

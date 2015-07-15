@@ -45,7 +45,7 @@ public class TopTracksFragment extends Fragment {
 
     // The container Activity must implement this interface so the fragment can deliver messages
     public interface OnTopTrackSelectedListener {
-        void onTopTrackSelected();
+        void onTopTrackSelected(TopTracksData topTrack);
     }
 
     @Override
@@ -93,8 +93,9 @@ public class TopTracksFragment extends Fragment {
         listTracks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            mCallback.onTopTrackSelected();
-            //Toast.makeText(getActivity(), "Play " + mTopTracksAdapter.getItem(position).trackTitle + "...", Toast.LENGTH_SHORT).show();
+                // Fetch info about clicked top track and send info to host activity
+                TopTracksData topTrack = mTopTracksData.get(position);
+                mCallback.onTopTrackSelected(topTrack);
             }
         });
 
@@ -141,7 +142,7 @@ public class TopTracksFragment extends Fragment {
                 mTopTracksData = new ArrayList<>();
                 int i = 0;
                 for(String[] topTrackData : result) {
-                    TopTracksData topTrack = new TopTracksData(topTrackData[0], topTrackData[1], topTrackData[2], topTrackData[3], topTrackData[4]);
+                    TopTracksData topTrack = new TopTracksData(topTrackData[0], topTrackData[1], topTrackData[2], topTrackData[3], topTrackData[4], topTrackData[5]);
                     mTopTracksAdapter.add(topTrack);
                     mTopTracksData.add(i, topTrack);
                     i++;
@@ -161,7 +162,7 @@ public class TopTracksFragment extends Fragment {
             ArrayList<String[]> topTracksData = new ArrayList<>();
             for(Track track : topTracksResult.tracks) {
                 i++;
-                String[] trackData = new String[5]; // Temporary array
+                String[] trackData = new String[6]; // Temporary array
 
                 trackData[0] = track.artists.get(0).id; // Save spotify ID
                 trackData[1] = track.album.name; // Save artist name
@@ -184,6 +185,8 @@ public class TopTracksFragment extends Fragment {
                         break;
                     }
                 }
+                trackData[5] = track.preview_url; // Save preview url
+
                 topTracksData.add(trackData); // Add temporary array to ArrayList
                 Log.v(LOG_TAG, "Spotify Track #" + i + " " + trackData[2]);
             }

@@ -99,10 +99,9 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         setActionBarData(getString(R.string.top_tracks), artistData[1]);
     }
 
-    public void onTopTrackSelected() {
-
+    public void onTopTrackSelected(TopTracksData topTrack) {
         FragmentManager fm = getSupportFragmentManager();
-        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance();
+        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(topTrack);
         playTrackFragment.show(fm, "dialog_play_track");
 
         resetActionBarData();

@@ -10,7 +10,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/dialogArtistName"
+        android:id="@+id/dialogArtistTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -18,7 +18,7 @@
         android:textSize="14sp"
         android:text="@string/app_name" />
     <TextView
-        android:id="@+id/dialogAlbumName"
+        android:id="@+id/dialogAlbumTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
@@ -33,7 +33,7 @@
         android:src="@mipmap/ic_launcher"
         android:contentDescription="@string/app_name" />
     <TextView
-        android:id="@+id/dialogTrackName"
+        android:id="@+id/dialogTrackTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
