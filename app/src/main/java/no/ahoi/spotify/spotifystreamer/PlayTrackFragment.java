@@ -21,6 +21,7 @@ public class PlayTrackFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme_AppCompat);
     }
 
     public static PlayTrackFragment newInstance() {

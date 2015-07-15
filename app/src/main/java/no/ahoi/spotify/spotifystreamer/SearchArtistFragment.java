@@ -75,8 +75,8 @@ public class SearchArtistFragment extends Fragment {
         mExecuteAdapter = true;
         if (savedInstanceState != null && savedInstanceState.containsKey("artistData")) {
             mArtistData = savedInstanceState.getParcelableArrayList("artistData");
-            // When navigating back to this fragment with back button press, mArtistData's content
-            // will be null, but the key 'artistData' still exist.
+            // When navigating back to this fragment with back button press, mArtistData's
+            // content will be null, but the key 'artistData' still exist.
             if (mArtistData != null) {
                 mExecuteAdapter = false;
                 for (ArtistData artist : mArtistData) {

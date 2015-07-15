@@ -100,27 +100,11 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     }
 
     public void onTopTrackSelected() {
-        Log.v(TAG, " WORKS");
 
         FragmentManager fm = getSupportFragmentManager();
         PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance();
         playTrackFragment.show(fm, "dialog_play_track");
 
-        /*
-        Bundle args = new Bundle();
-        args.putStringArray("artistData", topTrackData);
-        topTracksFragment.setArguments(args);
-        */
-
-        // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
-        // and add the transaction to the back stack so the user can navigate back
-        /*
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.dialogPlaceholder, playTrackFragment)
-                .addToBackStack(null)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .commit();
-        */
         resetActionBarData();
     }
 
