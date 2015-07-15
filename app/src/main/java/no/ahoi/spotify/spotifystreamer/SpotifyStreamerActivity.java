@@ -1,6 +1,7 @@
 package no.ahoi.spotify.spotifystreamer;
 
 import android.content.Context;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
@@ -11,7 +12,7 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
 
-public class SpotifyStreamerActivity extends AppCompatActivity implements SearchArtistFragment.OnArtistSelectedListener {
+public class SpotifyStreamerActivity extends AppCompatActivity implements SearchArtistFragment.OnArtistSelectedListener, TopTracksFragment.OnTopTrackSelectedListener {
     private static final String TAG = SpotifyStreamerActivity.class.getSimpleName();
     ActionBar mActionBar;
 
@@ -19,6 +20,8 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_spotify_streamer);
+
+        Log.v("4", "onCreate");
 
         mActionBar = getSupportActionBar();
         if (mActionBar != null) {
@@ -96,6 +99,31 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         setActionBarData(getString(R.string.top_tracks), artistData[1]);
     }
 
+    public void onTopTrackSelected() {
+        Log.v(TAG, " WORKS");
+
+        FragmentManager fm = getSupportFragmentManager();
+        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance();
+        playTrackFragment.show(fm, "dialog_play_track");
+
+        /*
+        Bundle args = new Bundle();
+        args.putStringArray("artistData", topTrackData);
+        topTracksFragment.setArguments(args);
+        */
+
+        // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        /*
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.dialogPlaceholder, playTrackFragment)
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .commit();
+        */
+        resetActionBarData();
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -110,4 +138,33 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         mActionBar.setTitle(getString(R.string.app_name));
         mActionBar.setSubtitle(null);
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // Prepare for app destruction
+        Log.v("1", "onPause");
+    }
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.v("2", "onStop");
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.v("3", "onDestroy");
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.v("5", "onStart");
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.v("6", "onResume");
+    }
+
+
 }
