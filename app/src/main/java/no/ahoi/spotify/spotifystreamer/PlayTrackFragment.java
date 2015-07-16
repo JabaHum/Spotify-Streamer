@@ -1,5 +1,6 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -7,17 +8,22 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 
 /**
  * A dialog fragment with posibility to play and stream track from Spotify's API Wrapper
  */
 public class PlayTrackFragment extends DialogFragment {
     private static final String LOG_TAG = PlayTrackFragment.class.getSimpleName();
+    MediaPlayer mMediaPlayer;
+    TopTracksData mTopTrack;
 
     public PlayTrackFragment() {
         // Required empty public constructor
@@ -47,31 +53,80 @@ public class PlayTrackFragment extends DialogFragment {
 
         if (this.getArguments() != null) {
             Bundle bundle = this.getArguments();
-            TopTracksData topTrack = bundle.getParcelable("topTrack");
-            // find views
-            TextView artistTitle = (TextView) rootView.findViewById(R.id.dialogArtistTitle);
-            TextView albumTitle = (TextView) rootView.findViewById(R.id.dialogAlbumTitle);
-            TextView trackTitle = (TextView) rootView.findViewById(R.id.dialogTrackTitle);
-            ImageView albumCover = (ImageView) rootView.findViewById(R.id.dialogAlbumCover);
-            // Set data to each view
-            artistTitle.setText("artist name");
-            albumTitle.setText(topTrack.albumTitle);
-            trackTitle.setText(topTrack.trackTitle);
-            // Load album cover
-            if (topTrack.albumImageUrlLarge != null) {
-                Picasso.with(getActivity()).load(topTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
-            } else if (topTrack.albumImageUrlSmall != null) {
-                Picasso.with(getActivity()).load(topTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
-            } else {
-                Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
+            mTopTrack = bundle.getParcelable("topTrack");
+            if (mTopTrack != null) {
+                // Find views
+                TextView artistTitle = (TextView) rootView.findViewById(R.id.dialogArtistTitle);
+                TextView albumTitle = (TextView) rootView.findViewById(R.id.dialogAlbumTitle);
+                TextView trackTitle = (TextView) rootView.findViewById(R.id.dialogTrackTitle);
+                TextView playTimeElapsed = (TextView) rootView.findViewById(R.id.dialogPlayTimeElapsed);
+                TextView playTimeLeft = (TextView) rootView.findViewById(R.id.dialogPlayTimeLeft);
+                ImageView albumCover = (ImageView) rootView.findViewById(R.id.dialogAlbumCover);
+                ImageButton previousTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayPrevious);
+                final ImageButton playTrackToggle = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayToggle);
+                ImageButton nextTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayNext);
+                SeekBar seekBar = (SeekBar) rootView.findViewById(R.id.dialogSeekBar);
+
+                // Set data to each view
+                artistTitle.setText("artist name"); // TODO get artist data
+                albumTitle.setText(mTopTrack.albumTitle);
+                trackTitle.setText(mTopTrack.trackTitle);
+                // Load album cover
+                if (mTopTrack.albumImageUrlLarge != null) {
+                    Picasso.with(getActivity()).load(mTopTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
+                } else if (mTopTrack.albumImageUrlSmall != null) {
+                    Picasso.with(getActivity()).load(mTopTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
+                } else {
+                    Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
+                }
+
+                // Initialize Media player
+                mMediaPlayer = new MediaPlayer();
+
+                playTrackToggle.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        // Todo perform cleanup!
+                        if (!mMediaPlayer.isPlaying()) {
+                            // Play track from remote url
+                            playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
+                            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                            mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                                @Override
+                                public boolean onError(MediaPlayer mp, int what, int extra) {
+                                    Log.e(LOG_TAG, "MediaPlayer()->OnErrorListener()->OnError() something went wrong");
+                                    // TODO Toast!
+                                    // The MediaPlayer has moved to the Error state. Reset.
+                                    mp.reset();
+                                    return false;
+                                }
+                            });
+                            try {
+                                mMediaPlayer.setDataSource(mTopTrack.previewUrl);
+                                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                    @Override
+                                    public void onPrepared(MediaPlayer mp) {
+                                        // Finished preparing. Start playing.
+                                        mp.start();
+                                    }
+                                });
+                                mMediaPlayer.prepareAsync(); // Prepare async to prevent blocking main thread.
+                            } catch (IllegalArgumentException|IllegalStateException|IOException e) {
+                                Log.e(LOG_TAG, "Cause: " + e.getCause() + " Message: " + e.getMessage());
+                            }
+
+                        } else {
+                            playTrackToggle.setImageResource(android.R.drawable.ic_media_play);
+                            // TODO pause playing
+                        }
+                    }
+                });
             }
 
         } else {
-            Log.v(LOG_TAG, " Could not fetch arguments (spotify ID) from activity");
+            Log.v(LOG_TAG, " Could not fetch arguments.");
         }
-
-
-        Log.v(LOG_TAG, "PlayTrackFragment->onCreateView");
 
         return rootView;
     }

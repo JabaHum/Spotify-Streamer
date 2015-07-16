@@ -58,7 +58,7 @@
             android:textSize="14sp"
             android:text="@string/play_time" />
         <TextView
-            android:id="@+id/dialogPlayTimeDuration"
+            android:id="@+id/dialogPlayTimeLeft"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -91,7 +91,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1">
             <ImageButton
-                android:id="@+id/dialogBtnPlay"
+                android:id="@+id/dialogBtnPlayToggle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
