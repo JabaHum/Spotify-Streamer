@@ -80,45 +80,49 @@ public class PlayTrackFragment extends DialogFragment {
                     Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
                 }
 
-                // Initialize Media player
-                mMediaPlayer = new MediaPlayer();
+                // Todo perform cleanup!
+                if (mMediaPlayer == null) {
+                    playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
+                    // Initialize Media player
+                    mMediaPlayer = new MediaPlayer();
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                        @Override
+                        public boolean onError(MediaPlayer mp, int what, int extra) {
+                            Log.e(LOG_TAG, "MediaPlayer()->OnErrorListener()->OnError() something went wrong");
+                            // TODO Toast!
+                            // The MediaPlayer has moved to the Error state. Reset.
+                            mp.reset();
+                            return false;
+                        }
+                    });
+                    try {
+                        mMediaPlayer.setDataSource(mTopTrack.previewUrl);
+                        mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                            @Override
+                            public void onPrepared(MediaPlayer mp) {
+                                // Finished preparing. Start playing.
+                                mp.start();
+                            }
+                        });
+                        mMediaPlayer.prepareAsync(); // Prepare async to prevent blocking main thread.
+                    } catch (IllegalArgumentException|IllegalStateException|IOException e) {
+                        Log.e(LOG_TAG, "Cause: " + e.getCause() + " Message: " + e.getMessage());
+                    }
+                } else {
+                    Log.e(LOG_TAG, "mMediaPlayer is not null.");
+                }
 
                 playTrackToggle.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
-                        // Todo perform cleanup!
                         if (!mMediaPlayer.isPlaying()) {
                             // Play track from remote url
                             playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
-                            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                            mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                                @Override
-                                public boolean onError(MediaPlayer mp, int what, int extra) {
-                                    Log.e(LOG_TAG, "MediaPlayer()->OnErrorListener()->OnError() something went wrong");
-                                    // TODO Toast!
-                                    // The MediaPlayer has moved to the Error state. Reset.
-                                    mp.reset();
-                                    return false;
-                                }
-                            });
-                            try {
-                                mMediaPlayer.setDataSource(mTopTrack.previewUrl);
-                                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                    @Override
-                                    public void onPrepared(MediaPlayer mp) {
-                                        // Finished preparing. Start playing.
-                                        mp.start();
-                                    }
-                                });
-                                mMediaPlayer.prepareAsync(); // Prepare async to prevent blocking main thread.
-                            } catch (IllegalArgumentException|IllegalStateException|IOException e) {
-                                Log.e(LOG_TAG, "Cause: " + e.getCause() + " Message: " + e.getMessage());
-                            }
-
+                            mMediaPlayer.start();
                         } else {
                             playTrackToggle.setImageResource(android.R.drawable.ic_media_play);
-                            // TODO pause playing
+                            mMediaPlayer.pause();
                         }
                     }
                 });
