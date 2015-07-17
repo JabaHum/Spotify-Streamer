@@ -1,6 +1,7 @@
 package no.ahoi.spotify.spotifystreamer;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -104,7 +105,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(topTrack);
         playTrackFragment.show(fm, "dialog_play_track");
 
-        resetActionBarData();
+        Intent intent = new Intent(this, MediaPlayerService.class);
+        Bundle args = new Bundle();
+        args.putParcelable("topTrack", topTrack);
+        intent.putExtras(args);
+        intent.setAction("no.ahoi.spotify.spotifystreamer.action.INITIATE");
+        // Start MediaPlayer service
+        this.startService(intent);
     }
 
     @Override
