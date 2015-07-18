@@ -1,7 +1,10 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -16,6 +19,8 @@ import android.view.inputmethod.InputMethodManager;
 public class SpotifyStreamerActivity extends AppCompatActivity implements SearchArtistFragment.OnArtistSelectedListener, TopTracksFragment.OnTopTrackSelectedListener {
     private static final String TAG = SpotifyStreamerActivity.class.getSimpleName();
     ActionBar mActionBar;
+    MediaPlayerService mService;
+    Boolean mBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,12 +111,14 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         playTrackFragment.show(fm, "dialog_play_track");
 
         Intent intent = new Intent(this, MediaPlayerService.class);
+
         Bundle args = new Bundle();
         args.putParcelable("topTrack", topTrack);
         intent.putExtras(args);
         intent.setAction("no.ahoi.spotify.spotifystreamer.action.INITIATE");
-        // Start MediaPlayer service
+        // Bind to and start Start MediaPlayer service
         this.startService(intent);
+        bindService(intent, mConnection, 0);
     }
 
     @Override
@@ -128,7 +135,6 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         mActionBar.setTitle(getString(R.string.app_name));
         mActionBar.setSubtitle(null);
     }
-
     @Override
     public void onPause() {
         super.onPause();
@@ -139,6 +145,11 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     public void onStop() {
         super.onStop();
         Log.v("2", "onStop");
+        // unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
     }
     @Override
     public void onDestroy() {
@@ -156,5 +167,35 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         Log.v("6", "onResume");
     }
 
+    /* Defines callbacks for service binding, passed to the bindService() method */
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // Successful bind to the MediaPlayerService, cast the IBinder and get the service's instance.
+            MediaPlayerService.LocalBinder binder = (MediaPlayerService.LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBound = false;
+        }
+    };
+
+    // Pause track
+    public Boolean pauseTrack() {
+        String CLASS = "pauseTrack()";
+        if (mBound && mService != null && mService.mMediaPlayer != null) {
+            if (mService.mMediaPlayer.isPlaying()) {
+                mService.mMediaPlayer.pause();
+                Log.v(CLASS, "Pausing track.");
+                return true;
+            } else {
+                Log.v(CLASS, "track is not playing. no need to pause...");
+            }
+        }
+        Log.v(CLASS, "mBound: " + mBound + ". Could not pause...");
+        return false;
+    }
 }

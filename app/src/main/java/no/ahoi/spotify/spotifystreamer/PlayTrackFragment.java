@@ -1,7 +1,5 @@
 package no.ahoi.spotify.spotifystreamer;
 
-import android.content.Intent;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -15,8 +13,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-
-import java.io.IOException;
 
 /**
  * A dialog fragment with posibility to play and stream track from Spotify's API Wrapper
@@ -82,28 +78,20 @@ public class PlayTrackFragment extends DialogFragment {
                 }
 
                 playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
-                // Prepare intent and extras before starting service
-                /*Intent intent = new Intent(getActivity(), MediaPlayerService.class);
-                Bundle args = new Bundle();
-                args.putParcelable("topTrack", mTopTrack);
-                intent.putExtras(args);
-                intent.setAction("no.ahoi.spotify.spotifystreamer.action.PLAY");
-                // Start MediaPlayer service
-                getActivity().startService(intent);*/
-
 
                 playTrackToggle.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (mMediaPlayer != null) {
-                            if (!mMediaPlayer.isPlaying()) {
-                                // Play track from remote url
-                                playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
-                                mMediaPlayer.start();
-                            } else {
-                                playTrackToggle.setImageResource(android.R.drawable.ic_media_play);
-                                mMediaPlayer.pause();
-                            }
+                        /*playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
+                        mMediaPlayer.start();*/
+
+                        Boolean trackPaused = ((SpotifyStreamerActivity) getActivity()).pauseTrack();
+                        if (trackPaused) {
+                            Log.v(LOG_TAG, "pausing");
+                            playTrackToggle.setImageResource(android.R.drawable.ic_media_play);
+                        } else {
+                            Log.v(LOG_TAG, "cannot pause");
+                            // TODO implement method to play track in activity
                         }
                     }
                 });
@@ -116,6 +104,7 @@ public class PlayTrackFragment extends DialogFragment {
 
         return rootView;
     }
+
     @Override
      public void onSaveInstanceState(Bundle outState) {
         // TODO Save data for later
