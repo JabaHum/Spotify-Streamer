@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -22,6 +23,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private static final String ACTION_INITIATE = "no.ahoi.spotify.spotifystreamer.action.INITIATE";
     private static final String ACTION_PLAY = "no.ahoi.spotify.spotifystreamer.action.PLAY";
     private static final String ACTION_PAUSE = "no.ahoi.spotify.spotifystreamer.action.PAUSE";
+
+    private final IBinder mBinder = new LocalBinder();
 
     MediaPlayer mMediaPlayer;
     TopTracksData mTopTrack;
@@ -84,9 +87,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        //throw new UnsupportedOperationException("Not yet implemented");
-        return null;
+        // Return the communication channel to the service.
+        return mBinder;
+    }
+
+    public class LocalBinder extends Binder {
+        MediaPlayerService getService() {
+            // Return this instance of MediaPlayerService so that clients can call the public methods.
+            return MediaPlayerService.this;
+        }
     }
 
     @Override
