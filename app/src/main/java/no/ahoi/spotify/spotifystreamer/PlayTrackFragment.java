@@ -85,6 +85,8 @@ public class PlayTrackFragment extends DialogFragment {
                         /*playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
                         mMediaPlayer.start();*/
 
+                        // Call to SpotifyStreamerActivity should not be done if fragment is to be
+                        // called from multiple activities. http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
                         Boolean trackPaused = ((SpotifyStreamerActivity) getActivity()).pauseTrack();
                         if (trackPaused) {
                             Log.v(LOG_TAG, "pausing");
