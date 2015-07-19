@@ -14,10 +14,11 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 /**
- * A dialog fragment with posibility to play and stream track from Spotify's API Wrapper
+ * A dialog fragment with possibility to play and stream track from Spotify's API Wrapper
  */
 public class PlayTrackFragment extends DialogFragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final String LOG_TAG = PlayTrackFragment.class.getSimpleName();
+    ArtistData mArtistData;
     TopTracksData mTopTrack;
     SpotifyStreamerActivity mActivity;
     ImageButton mPreviousTrack;
@@ -39,14 +40,15 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         // called from multiple activities. Since we only have one activity, this is OK.
         // http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
         mActivity = (SpotifyStreamerActivity) getActivity();
-        Log.v("mactivity...", "WORKS");
     }
 
-    public static PlayTrackFragment newInstance(TopTracksData topTrack) {
+    public static PlayTrackFragment newInstance(TopTracksData topTrack, ArtistData artistData) {
+        Log.e(LOG_TAG, artistData.imageUrl);
         PlayTrackFragment playTrackFragment = new PlayTrackFragment();
         // Set top track data before returning
         Bundle args = new Bundle();
         args.putParcelable("topTrack", topTrack);
+        args.putParcelable("artistData", artistData);
         playTrackFragment.setArguments(args);
         return playTrackFragment;
     }
@@ -56,50 +58,61 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.dialog_play_track, container, false);
 
-        if (this.getArguments() != null) {
+        // Fetch data from savedInstanceState, else fetch from arguments.
+        if (savedInstanceState != null && savedInstanceState.containsKey("topTrack") && savedInstanceState.containsKey("artistData")) {
+            mTopTrack = savedInstanceState.getParcelable("topTrack");
+            mArtistData = savedInstanceState.getParcelable("artistData");
+        } else if (this.getArguments() != null) {
             Bundle bundle = this.getArguments();
             mTopTrack = bundle.getParcelable("topTrack");
-            if (mTopTrack != null) {
-                // Find views
-                TextView artistTitle = (TextView) rootView.findViewById(R.id.dialogArtistTitle);
-                TextView albumTitle = (TextView) rootView.findViewById(R.id.dialogAlbumTitle);
-                TextView trackTitle = (TextView) rootView.findViewById(R.id.dialogTrackTitle);
-                TextView playTimeElapsed = (TextView) rootView.findViewById(R.id.dialogPlayTimeElapsed);
-                TextView playTimeLeft = (TextView) rootView.findViewById(R.id.dialogPlayTimeLeft);
-                ImageView albumCover = (ImageView) rootView.findViewById(R.id.dialogAlbumCover);
-                mPreviousTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayPrevious);
-                mPlayTrackToggle = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayToggle);
-                mNextTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayNext);
-                SeekBar seekBar = (SeekBar) rootView.findViewById(R.id.dialogSeekBar);
+            mArtistData = bundle.getParcelable("artistData");
+        } else {
+            Log.e(LOG_TAG, " Could not fetch data.");
+        }
 
-                // Set click listeners
-                mPreviousTrack.setOnClickListener(this);
-                mPlayTrackToggle.setOnClickListener(this);
-                mNextTrack.setOnClickListener(this);
-                seekBar.setOnSeekBarChangeListener(this);
+        if (mTopTrack != null && mArtistData != null) {
+            // Find views
+            TextView artistTitle = (TextView) rootView.findViewById(R.id.dialogArtistTitle);
+            TextView albumTitle = (TextView) rootView.findViewById(R.id.dialogAlbumTitle);
+            TextView trackTitle = (TextView) rootView.findViewById(R.id.dialogTrackTitle);
+            TextView playTimeElapsed = (TextView) rootView.findViewById(R.id.dialogPlayTimeElapsed);
+            TextView playTimeLeft = (TextView) rootView.findViewById(R.id.dialogPlayTimeLeft);
+            ImageView albumCover = (ImageView) rootView.findViewById(R.id.dialogAlbumCover);
+            mPreviousTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayPrevious);
+            mPlayTrackToggle = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayToggle);
+            mNextTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayNext);
+            SeekBar seekBar = (SeekBar) rootView.findViewById(R.id.dialogSeekBar);
 
-                // Set data to each view
-                artistTitle.setText("artist name"); // TODO get artist data
-                albumTitle.setText(mTopTrack.albumTitle);
-                trackTitle.setText(mTopTrack.trackTitle);
-                // Load album cover
-                if (mTopTrack.albumImageUrlLarge != null) {
-                    Picasso.with(getActivity()).load(mTopTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
-                } else if (mTopTrack.albumImageUrlSmall != null) {
-                    Picasso.with(getActivity()).load(mTopTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
-                } else {
-                    Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
-                }
+            // Set click listeners
+            mPreviousTrack.setOnClickListener(this);
+            mPlayTrackToggle.setOnClickListener(this);
+            mNextTrack.setOnClickListener(this);
+            seekBar.setOnSeekBarChangeListener(this);
+
+            // Set data to each view
+            artistTitle.setText(mArtistData.name);
+            albumTitle.setText(mTopTrack.albumTitle);
+            trackTitle.setText(mTopTrack.trackTitle);
+            // Load album cover
+            if (mTopTrack.albumImageUrlLarge != null) {
+                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
+            } else if (mTopTrack.albumImageUrlSmall != null) {
+                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
+            } else {
+                Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
             }
         } else {
-            Log.v(LOG_TAG, " Could not fetch arguments.");
+            Log.e(LOG_TAG, "Could not fetch nessesary data");
         }
         return rootView;
     }
 
     @Override
      public void onSaveInstanceState(Bundle outState) {
-        // TODO Save data for later
+        if (mTopTrack != null && mArtistData != null) {
+            outState.putParcelable("topTrack", mTopTrack);
+            outState.putParcelable("artistData", mArtistData);
+        }
         super.onSaveInstanceState(outState);
     }
 
@@ -115,16 +128,12 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                     if (trackPaused) {
                         Log.v(LOG_TAG, "paused successfully");
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
-                    } else {
-                        // TODO Display toast
                     }
                 } else {
                     Boolean trackStarted = mActivity.trackController("start");
                     if (trackStarted) {
                         Log.v(LOG_TAG, "started successfully");
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
-                    } else {
-                        // TODO Display toast
                     }
                 }
                 break;
