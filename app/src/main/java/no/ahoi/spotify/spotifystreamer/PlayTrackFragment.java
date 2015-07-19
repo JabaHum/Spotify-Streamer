@@ -39,6 +39,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         // called from multiple activities. Since we only have one activity, this is OK.
         // http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
         mActivity = (SpotifyStreamerActivity) getActivity();
+        Log.v("mactivity...", "WORKS");
     }
 
     public static PlayTrackFragment newInstance(TopTracksData topTrack) {
@@ -90,7 +91,6 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                     Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
                 }
             }
-
         } else {
             Log.v(LOG_TAG, " Could not fetch arguments.");
         }
@@ -109,10 +109,23 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         switch(v.getId()) {
             case R.id.dialogBtnPlayToggle:
                 Log.v("onClick: ", "start / pause music");
-                Boolean trackPaused = mActivity.pauseTrack();
-                if (trackPaused) {
-                    Log.v(LOG_TAG, "paused successfully");
-                    mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
+                Boolean isPlaying = mActivity.trackController("isPlaying");
+                if (isPlaying) {
+                    Boolean trackPaused = mActivity.trackController("pause");
+                    if (trackPaused) {
+                        Log.v(LOG_TAG, "paused successfully");
+                        mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
+                    } else {
+                        // TODO Display toast
+                    }
+                } else {
+                    Boolean trackStarted = mActivity.trackController("start");
+                    if (trackStarted) {
+                        Log.v(LOG_TAG, "started successfully");
+                        mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
+                    } else {
+                        // TODO Display toast
+                    }
                 }
                 break;
             case R.id.dialogBtnPlayPrevious:

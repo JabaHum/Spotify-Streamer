@@ -116,7 +116,8 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         args.putParcelable("topTrack", topTrack);
         intent.putExtras(args);
         intent.setAction("no.ahoi.spotify.spotifystreamer.action.INITIATE");
-        // Bind to and start Start MediaPlayer service
+        // TODO fix so that serice is bound on screen rotation. mService is null.
+        // Bind to and Start MediaPlayer service
         this.startService(intent);
         bindService(intent, mConnection, 0);
     }
@@ -183,19 +184,39 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         }
     };
 
-    // Pause track
-    public Boolean pauseTrack() {
-        String CLASS = "pauseTrack()";
+    public Boolean trackController(String command) {
+        String TAG = "trackController()";
+
         if (mBound && mService != null && mService.mMediaPlayer != null) {
-            if (mService.mMediaPlayer.isPlaying()) {
-                mService.mMediaPlayer.pause();
-                Log.v(CLASS, "Pausing track.");
-                return true;
-            } else {
-                Log.v(CLASS, "track is not playing. no need to pause...");
+            switch (command) {
+                case "start":
+                    if (!mService.mMediaPlayer.isPlaying()) {
+                        mService.mMediaPlayer.start();
+                        Log.v(TAG, "starting track.");
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case "pause":
+                    if (mService.mMediaPlayer.isPlaying()) {
+                        mService.mMediaPlayer.pause();
+                        Log.v(TAG, "Pausing track.");
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case "isPlaying":
+                    return mService.mMediaPlayer.isPlaying();
             }
         }
-        Log.v(CLASS, "mBound: " + mBound + ". Could not pause...");
-        return false;
+
+        if (mService == null) {
+            Log.v("MSERVICE", "IS NULL!!");
+        } else {
+            if (mService.mMediaPlayer == null) {
+                Log.v("MMEDIAPLAYER", "IS NULL!!");
+            }
+        }
+        return null;
     }
 }
