@@ -1,6 +1,5 @@
 package no.ahoi.spotify.spotifystreamer;
 
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -17,10 +16,13 @@ import com.squareup.picasso.Picasso;
 /**
  * A dialog fragment with posibility to play and stream track from Spotify's API Wrapper
  */
-public class PlayTrackFragment extends DialogFragment {
+public class PlayTrackFragment extends DialogFragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final String LOG_TAG = PlayTrackFragment.class.getSimpleName();
-    MediaPlayer mMediaPlayer;
     TopTracksData mTopTrack;
+    SpotifyStreamerActivity mActivity;
+    ImageButton mPreviousTrack;
+    ImageButton mPlayTrackToggle;
+    ImageButton mNextTrack;
 
     public PlayTrackFragment() {
         // Required empty public constructor
@@ -32,6 +34,11 @@ public class PlayTrackFragment extends DialogFragment {
 
         // Open dialog in full screen
         setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme_AppCompat);
+
+        // Call to SpotifyStreamerActivity should not be done if fragment is to be
+        // called from multiple activities. Since we only have one activity, this is OK.
+        // http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
+        mActivity = (SpotifyStreamerActivity) getActivity();
     }
 
     public static PlayTrackFragment newInstance(TopTracksData topTrack) {
@@ -59,10 +66,16 @@ public class PlayTrackFragment extends DialogFragment {
                 TextView playTimeElapsed = (TextView) rootView.findViewById(R.id.dialogPlayTimeElapsed);
                 TextView playTimeLeft = (TextView) rootView.findViewById(R.id.dialogPlayTimeLeft);
                 ImageView albumCover = (ImageView) rootView.findViewById(R.id.dialogAlbumCover);
-                ImageButton previousTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayPrevious);
-                final ImageButton playTrackToggle = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayToggle);
-                ImageButton nextTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayNext);
+                mPreviousTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayPrevious);
+                mPlayTrackToggle = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayToggle);
+                mNextTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayNext);
                 SeekBar seekBar = (SeekBar) rootView.findViewById(R.id.dialogSeekBar);
+
+                // Set click listeners
+                mPreviousTrack.setOnClickListener(this);
+                mPlayTrackToggle.setOnClickListener(this);
+                mNextTrack.setOnClickListener(this);
+                seekBar.setOnSeekBarChangeListener(this);
 
                 // Set data to each view
                 artistTitle.setText("artist name"); // TODO get artist data
@@ -76,34 +89,11 @@ public class PlayTrackFragment extends DialogFragment {
                 } else {
                     Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
                 }
-
-                playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
-
-                playTrackToggle.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        /*playTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
-                        mMediaPlayer.start();*/
-
-                        // Call to SpotifyStreamerActivity should not be done if fragment is to be
-                        // called from multiple activities. http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
-                        Boolean trackPaused = ((SpotifyStreamerActivity) getActivity()).pauseTrack();
-                        if (trackPaused) {
-                            Log.v(LOG_TAG, "pausing");
-                            playTrackToggle.setImageResource(android.R.drawable.ic_media_play);
-                        } else {
-                            Log.v(LOG_TAG, "cannot pause");
-                            // TODO implement method to play track in activity
-                        }
-                    }
-                });
-
             }
 
         } else {
             Log.v(LOG_TAG, " Could not fetch arguments.");
         }
-
         return rootView;
     }
 
@@ -112,4 +102,44 @@ public class PlayTrackFragment extends DialogFragment {
         // TODO Save data for later
         super.onSaveInstanceState(outState);
     }
+
+    @Override
+    public void onClick(View v) {
+        Log.v(LOG_TAG, v.getId() + "");
+        switch(v.getId()) {
+            case R.id.dialogBtnPlayToggle:
+                Log.v("onClick: ", "start / pause music");
+                Boolean trackPaused = mActivity.pauseTrack();
+                if (trackPaused) {
+                    Log.v(LOG_TAG, "paused successfully");
+                    mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
+                }
+                break;
+            case R.id.dialogBtnPlayPrevious:
+                Log.v("onClick: ", "play previous track");
+                break;
+            case R.id.dialogBtnPlayNext:
+                Log.v("onClick: ", "play next track");
+                break;
+        }
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        // Notification that the progress level has changed.
+        // TODO: set text in time durition
+        // TODO: play song from selected progress
+        Log.v("onProgressChanged()", "progress selected: " + progress);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        // Notification that the user has started a touch gesture.
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+        // Notification that the user has finished a touching gesture.
+    }
+
 }
