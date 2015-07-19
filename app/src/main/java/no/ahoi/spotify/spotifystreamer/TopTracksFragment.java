@@ -38,6 +38,7 @@ public class TopTracksFragment extends Fragment {
     private static final String LOG_TAG = TopTracksFragment.class.getSimpleName();
     private ArrayAdapter<TopTracksData> mTopTracksAdapter;
     private ArrayList<TopTracksData> mTopTracksData;
+    private ArtistData mArtistData;
     private OnTopTrackSelectedListener mCallback;
 
     public TopTracksFragment() {
@@ -45,7 +46,7 @@ public class TopTracksFragment extends Fragment {
 
     // The container Activity must implement this interface so the fragment can deliver messages
     public interface OnTopTrackSelectedListener {
-        void onTopTrackSelected(TopTracksData topTrack);
+        void onTopTrackSelected(TopTracksData topTrack, ArtistData artistdata);
     }
 
     @Override
@@ -69,6 +70,11 @@ public class TopTracksFragment extends Fragment {
 
         mTopTracksAdapter = new TopTracksSearchAdapter(getActivity(), new ArrayList<TopTracksData>());
 
+        // Save artistData
+        if (savedInstanceState != null && savedInstanceState.containsKey("artistData")) {
+            mArtistData = savedInstanceState.getParcelable("artistData");
+        }
+
         // Populate list if we already have topTracksData, otherwise fetch it from the spotify API.
         if (savedInstanceState != null && savedInstanceState.containsKey("topTracksData")) {
             mTopTracksData = savedInstanceState.getParcelableArrayList("topTracksData");
@@ -79,11 +85,11 @@ public class TopTracksFragment extends Fragment {
         } else if (this.getArguments() != null) {
             // Expects artist Spotify ID
             Bundle bundle = this.getArguments();
-            String[] artistData = bundle.getStringArray("artistData");
+            mArtistData = bundle.getParcelable("artistData");
             FetchTopTracksTask topTracksTask = new FetchTopTracksTask();
-            topTracksTask.execute(artistData[0]);
+            topTracksTask.execute(mArtistData.spotifyId);
         } else {
-            Log.v(LOG_TAG, " Could not fetch arguments (spotify ID) from activity");
+            Log.v(LOG_TAG, " Could not fetch artistData activity");
         }
 
         // Find a reference to the fragments ListView to attach the adapter
@@ -95,7 +101,7 @@ public class TopTracksFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Fetch info about clicked top track and send info to host activity
                 TopTracksData topTrack = mTopTracksData.get(position);
-                mCallback.onTopTrackSelected(topTrack);
+                mCallback.onTopTrackSelected(topTrack, mArtistData);
             }
         });
 
@@ -104,8 +110,9 @@ public class TopTracksFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mTopTracksData != null && !mTopTracksData.isEmpty()) {
+        if (mTopTracksData != null && !mTopTracksData.isEmpty() && mArtistData != null) {
             outState.putParcelableArrayList("topTracksData", mTopTracksData);
+            outState.putParcelable("artistData", mArtistData);
         }
         super.onSaveInstanceState(outState);
     }

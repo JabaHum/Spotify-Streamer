@@ -49,7 +49,7 @@ public class SearchArtistFragment extends Fragment {
 
     // The container Activity must implement this interface so the fragment can deliver messages
     public interface OnArtistSelectedListener {
-        void onArtistSelected(String[] artistData);
+        void onArtistSelected(ArtistData artistData);
     }
 
     @Override
@@ -121,12 +121,8 @@ public class SearchArtistFragment extends Fragment {
         listArtists.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Fetch info about clicked artist and send info to host activity
-                ArtistData artistData = mSpotifySearchAdapter.getItem(position);
-                String[] artist = new String[2];
-                artist[0] = artistData.spotifyId;
-                artist[1] = artistData.name;
-                mCallback.onArtistSelected(artist);
+                // Send info about selected artist to host activity
+                mCallback.onArtistSelected(mSpotifySearchAdapter.getItem(position));
             }
         });
 

@@ -81,8 +81,8 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         return super.onOptionsItemSelected(item);
     }
 
-    public void onArtistSelected(String[] artistData) {
-        Log.v(TAG, " spotify ID: " + artistData[0] + " name: " + artistData[1]);
+    public void onArtistSelected(ArtistData artistData) {
+        Log.v(TAG, " spotify ID: " + artistData.spotifyId + " name: " + artistData.name);
         
         // Hide keyboard
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -91,7 +91,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
 
         TopTracksFragment topTracksFragment = new TopTracksFragment();
         Bundle args = new Bundle();
-        args.putStringArray("artistData", artistData);
+        args.putParcelable("artistData", artistData);
         topTracksFragment.setArguments(args);
 
         // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
@@ -102,22 +102,30 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                 .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                 .commit();
 
-        setActionBarData(getString(R.string.top_tracks), artistData[1]);
+        setActionBarData(getString(R.string.top_tracks), artistData.name);
     }
 
-    public void onTopTrackSelected(TopTracksData topTrack) {
+    public void onTopTrackSelected(TopTracksData topTrack, ArtistData artistData) {
+        // show PlayTrackFragment
         FragmentManager fm = getSupportFragmentManager();
-        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(topTrack);
+        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(topTrack, artistData);
         playTrackFragment.show(fm, "dialog_play_track");
 
-        Intent intent = new Intent(this, MediaPlayerService.class);
 
+        // Prepare track for MediaPlayerService
+        Intent intent = new Intent(this, MediaPlayerService.class);
         Bundle args = new Bundle();
         args.putParcelable("topTrack", topTrack);
         intent.putExtras(args);
-        intent.setAction("no.ahoi.spotify.spotifystreamer.action.INITIATE");
-        // TODO fix so that serice is bound on screen rotation. mService is null.
-        // Bind to and Start MediaPlayer service
+        // TODO mBound is false when activity is killed (home button is pressed). check if mediaplayer is running.
+        if (!mBound) {
+            // Firstload
+            intent.setAction("no.ahoi.spotify.spotifystreamer.action.INITIATE");
+        } else {
+            // MediaPlayerService is already running. Play selected track.
+            intent.setAction("no.ahoi.spotify.spotifystreamer.action.START");
+        }
+        // Run MediaPlayer Service and bind to it
         this.startService(intent);
         bindService(intent, mConnection, 0);
     }
@@ -168,7 +176,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         Log.v("6", "onResume");
     }
 
-    /* Defines callbacks for service binding, passed to the bindService() method */
+    // Defines callbacks for service binding, passed to the bindService() method
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
