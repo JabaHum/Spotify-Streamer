@@ -1,6 +1,7 @@
 package no.ahoi.spotify.spotifystreamer;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,9 +22,14 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     ArtistData mArtistData;
     TopTracksData mTopTrack;
     SpotifyStreamerActivity mActivity;
+    TextView mPlayTimeElapsed;
+    TextView mPlayTimeLeft;
     ImageButton mPreviousTrack;
     ImageButton mPlayTrackToggle;
     ImageButton mNextTrack;
+    SeekBar mSeekBar;
+    Handler mHandler;
+    Runnable mTimeChecker;
 
     public PlayTrackFragment() {
         // Required empty public constructor
@@ -75,19 +81,19 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
             TextView artistTitle = (TextView) rootView.findViewById(R.id.dialogArtistTitle);
             TextView albumTitle = (TextView) rootView.findViewById(R.id.dialogAlbumTitle);
             TextView trackTitle = (TextView) rootView.findViewById(R.id.dialogTrackTitle);
-            TextView playTimeElapsed = (TextView) rootView.findViewById(R.id.dialogPlayTimeElapsed);
-            TextView playTimeLeft = (TextView) rootView.findViewById(R.id.dialogPlayTimeLeft);
+            mPlayTimeElapsed = (TextView) rootView.findViewById(R.id.dialogPlayTimeElapsed);
+            mPlayTimeLeft = (TextView) rootView.findViewById(R.id.dialogPlayTimeLeft);
             ImageView albumCover = (ImageView) rootView.findViewById(R.id.dialogAlbumCover);
             mPreviousTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayPrevious);
             mPlayTrackToggle = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayToggle);
             mNextTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayNext);
-            SeekBar seekBar = (SeekBar) rootView.findViewById(R.id.dialogSeekBar);
+            mSeekBar = (SeekBar) rootView.findViewById(R.id.dialogSeekBar);
 
             // Set click listeners
             mPreviousTrack.setOnClickListener(this);
             mPlayTrackToggle.setOnClickListener(this);
             mNextTrack.setOnClickListener(this);
-            seekBar.setOnSeekBarChangeListener(this);
+            mSeekBar.setOnSeekBarChangeListener(this);
 
             // Set data to each view
             artistTitle.setText(mArtistData.name);
@@ -101,6 +107,28 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
             } else {
                 Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
             }
+
+            if (mHandler == null) {
+                mHandler = new Handler();
+            }
+
+            mTimeChecker = new Runnable() {
+                @Override
+                public void run() {
+                    int interval = 200;
+                    Integer[] times = mActivity.updateTimes();
+                    if (times != null) {
+                        // !! will be set every loop when track duration is 100 sek
+                        if (mSeekBar.getMax() == 100) {
+                            mSeekBar.setMax(times[0] / 1000);
+                        }
+                        mSeekBar.setProgress(times[1] / 1000);
+                    }
+                    mHandler.postDelayed(mTimeChecker, interval);
+                }
+            };
+            mTimeChecker.run();
+
         } else {
             Log.e(LOG_TAG, "Could not fetch nessesary data");
         }
@@ -126,13 +154,11 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                 if (isPlaying) {
                     Boolean trackPaused = mActivity.trackController("pause");
                     if (trackPaused) {
-                        Log.v(LOG_TAG, "paused successfully");
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
                     }
                 } else {
                     Boolean trackStarted = mActivity.trackController("start");
                     if (trackStarted) {
-                        Log.v(LOG_TAG, "started successfully");
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
                     }
                 }
@@ -151,7 +177,11 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         // Notification that the progress level has changed.
         // TODO: set text in time durition
         // TODO: play song from selected progress
+        // http://stackoverflow.com/questions/6242268/repeat-a-task-with-a-time-delay/6242292#6242292
         Log.v("onProgressChanged()", "progress selected: " + progress);
+        mPlayTimeElapsed.setText(Integer.toString(progress));
+        setTimeLeft(progress);
+
     }
 
     @Override
@@ -164,4 +194,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         // Notification that the user has finished a touching gesture.
     }
 
+    private void setTimeLeft(int progress) {
+        mPlayTimeLeft.setText(Integer.toString((progress - mSeekBar.getMax())));
+    }
 }

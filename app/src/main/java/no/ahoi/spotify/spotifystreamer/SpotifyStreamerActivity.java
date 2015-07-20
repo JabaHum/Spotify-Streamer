@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -128,6 +129,8 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         // Run MediaPlayer Service and bind to it
         this.startService(intent);
         bindService(intent, mConnection, 0);
+
+
     }
 
     @Override
@@ -196,25 +199,26 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         String TAG = "trackController()";
 
         if (mBound && mService != null && mService.mMediaPlayer != null) {
+            MediaPlayer mp = mService.mMediaPlayer;
             switch (command) {
                 case "start":
-                    if (!mService.mMediaPlayer.isPlaying()) {
-                        mService.mMediaPlayer.start();
+                    if (!mp.isPlaying()) {
+                        mp.start();
                         Log.v(TAG, "starting track.");
                         return true;
                     } else {
                         return false;
                     }
                 case "pause":
-                    if (mService.mMediaPlayer.isPlaying()) {
-                        mService.mMediaPlayer.pause();
+                    if (mp.isPlaying()) {
+                        mp.pause();
                         Log.v(TAG, "Pausing track.");
                         return true;
                     } else {
                         return false;
                     }
                 case "isPlaying":
-                    return mService.mMediaPlayer.isPlaying();
+                    return mp.isPlaying();
             }
         }
 
@@ -226,5 +230,18 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             }
         }
         return null;
+    }
+
+    public Integer[] updateTimes() {
+        // fetch times to update UI
+        if (mBound && mService != null && mService.mMediaPlayer != null && trackController("isPlaying")) {
+            Integer[] times = new Integer[2];
+            // nitpick: no need to call getDuration() more than once
+            times[0] = mService.mMediaPlayer.getDuration();
+            times[1] = mService.mMediaPlayer.getCurrentPosition();
+            return times;
+        } else {
+            return null;
+        }
     }
 }
