@@ -197,4 +197,12 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     private void setTimeLeft(int progress) {
         mPlayTimeLeft.setText(Integer.toString((progress - mSeekBar.getMax())));
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mHandler != null) {
+            mHandler.removeCallbacks(mTimeChecker);
+        }
+    }
 }
