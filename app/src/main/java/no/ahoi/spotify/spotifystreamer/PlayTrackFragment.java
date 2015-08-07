@@ -112,6 +112,8 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                 mHandler = new Handler();
             }
 
+            // Update SeekBar times
+            // TODO: Pause Runnable when music is paused
             mTimeChecker = new Runnable() {
                 @Override
                 public void run() {
@@ -130,7 +132,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
             mTimeChecker.run();
 
         } else {
-            Log.e(LOG_TAG, "Could not fetch nessesary data");
+            Log.e(LOG_TAG, "Could not fetch necessary data");
         }
         return rootView;
     }
@@ -175,7 +177,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         // Notification that the progress level has changed.
-        // TODO: set text in time durition
+        // TODO: set text in time duration
         // TODO: play song from selected progress
         // http://stackoverflow.com/questions/6242268/repeat-a-task-with-a-time-delay/6242292#6242292
         Log.v("onProgressChanged()", "progress selected: " + progress);
