@@ -157,16 +157,16 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     public void onStop() {
         super.onStop();
         Log.v("2", "onStop");
-        // unbind from the service
-        if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
-        }
     }
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.v("3", "onDestroy");
+        // unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
     }
     @Override
     public void onStart() {

@@ -201,8 +201,17 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
         if (mHandler != null) {
             mHandler.removeCallbacks(mTimeChecker);
         }
