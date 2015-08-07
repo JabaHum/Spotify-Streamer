@@ -108,29 +108,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                 Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
             }
 
-            if (mHandler == null) {
-                mHandler = new Handler();
-            }
-
-            // Update SeekBar times
-            // TODO: Pause Runnable when music is paused
-            mTimeChecker = new Runnable() {
-                @Override
-                public void run() {
-                    int interval = 200;
-                    Integer[] times = mActivity.updateTimes();
-                    if (times != null) {
-                        // !! will be set every loop when track duration is 100 sek
-                        if (mSeekBar.getMax() == 100) {
-                            mSeekBar.setMax(times[0] / 1000);
-                        }
-                        mSeekBar.setProgress(times[1] / 1000);
-                    }
-                    mHandler.postDelayed(mTimeChecker, interval);
-                }
-            };
-            mTimeChecker.run();
-
+            updateSeekBarTimes();
         } else {
             Log.e(LOG_TAG, "Could not fetch necessary data");
         }
@@ -157,11 +135,13 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                     Boolean trackPaused = mActivity.trackController("pause");
                     if (trackPaused) {
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
+                        removeSeekBarHandler();
                     }
                 } else {
                     Boolean trackStarted = mActivity.trackController("start");
                     if (trackStarted) {
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
+                        updateSeekBarTimes();
                     }
                 }
                 break;
@@ -212,8 +192,36 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     @Override
     public void onDestroy() {
         super.onDestroy();
+        removeSeekBarHandler();
+    }
+
+    // Update SeekBar times
+    private void updateSeekBarTimes() {
+        if (mHandler == null) {
+            mHandler = new Handler();
+        }
+        mTimeChecker = new Runnable() {
+            @Override
+            public void run() {
+                int interval = 200;
+                Integer[] times = mActivity.updateTimes();
+                if (times != null) {
+                    // !! will be set every loop when track duration is 100 sek
+                    if (mSeekBar.getMax() == 100) {
+                        mSeekBar.setMax(times[0] / 1000);
+                    }
+                    mSeekBar.setProgress(times[1] / 1000);
+                }
+                mHandler.postDelayed(mTimeChecker, interval);
+            }
+        };
+        mTimeChecker.run();
+    }
+
+    private void removeSeekBarHandler() {
         if (mHandler != null) {
             mHandler.removeCallbacks(mTimeChecker);
+            mTimeChecker = null;
         }
     }
 }
