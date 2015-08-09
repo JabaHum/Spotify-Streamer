@@ -124,11 +124,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(artistData, topTracksData, trackPosition);
         playTrackFragment.show(fm, "dialog_play_track");
 
-        if (!mBound) { // First load
-            startMediaPlayer(topTracksData, trackPosition, "INITIATE");
-        } else { // MediaPlayerService is already running. Play selected track.
-            startMediaPlayer(topTracksData, trackPosition, "START");
-        }
+        startMediaPlayer(topTracksData, trackPosition);
     }
 
     @Override
@@ -224,7 +220,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                 case "next":
                     // TODO GET array list size, start from 0 if last song, else play next in list
 
-                    //startMediaPlayer(topTracksData, trackPosition, "START");
+                    //startMediaPlayer(topTracksData, trackPosition);
                     return true;
             }
         }
@@ -252,14 +248,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         }
     }
 
-    private void startMediaPlayer(ArrayList<TopTracksData> topTracksData, Integer trackPosition, String action) {
+    private void startMediaPlayer(ArrayList<TopTracksData> topTracksData, Integer trackPosition) {
         // Prepare track for MediaPlayerService
         Intent intent = new Intent(this, MediaPlayerService.class);
         Bundle args = new Bundle();
         args.putParcelableArrayList("topTracksdata", topTracksData);
         args.putInt("trackPosition", trackPosition);
         intent.putExtras(args);
-        intent.setAction("no.ahoi.spotify.spotifystreamer.action." + action);
         // Run MediaPlayer Service and bind to it
         this.startService(intent);
         bindService(intent, mConnection, 0);

@@ -20,8 +20,6 @@ import java.util.ArrayList;
 
 public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener {
     private static final String LOG_TAG = PlayTrackFragment.class.getSimpleName();
-    private static final String ACTION_INITIATE = "no.ahoi.spotify.spotifystreamer.action.INITIATE";
-    private static final String ACTION_PLAY = "no.ahoi.spotify.spotifystreamer.action.START";
 
     private final IBinder mBinder = new LocalBinder();
     MediaPlayer mMediaPlayer;
@@ -34,67 +32,63 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) { // Do not call directly
         // onStartCommand is called when the service is requested to start by a component (activity)
-        if (intent != null && intent.getAction() != null && intent.getExtras() != null &&
+        if (intent != null && intent.getExtras() != null &&
                 intent.getExtras().containsKey("topTracksdata")) {
-            final String action = intent.getAction();
             mTopTracksData = intent.getExtras().getParcelableArrayList("topTracksdata");
             mCurrentTrackPosition = intent.getExtras().getInt("trackPosition");
-            TopTracksData currentTrack = mTopTracksData.get(mCurrentTrackPosition);
-            if (ACTION_INITIATE.equals(action)) {
-                Log.v("ACTION: ", action);
-                Log.v(LOG_TAG, currentTrack.albumTitle);
-
-                if (mMediaPlayer == null) {
-                    // Initialize Media player
-                    mMediaPlayer = new MediaPlayer();
-                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                    mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                        @Override
-                        public boolean onError(MediaPlayer mp, int what, int extra) {
-                            Log.e(LOG_TAG, "MediaPlayer()->OnErrorListener()->OnError() something went wrong");
-                            // TODO Toast!
-                            // The MediaPlayer has moved to the Error state. Reset.
-                            mp.reset();
-                            return false;
-                        }
-                    });
-                    try {
-                        mMediaPlayer.setDataSource(currentTrack.previewUrl);
-                        mMediaPlayer.setOnPreparedListener(this);
-                        mMediaPlayer.prepareAsync(); // Prepare async to prevent blocking main thread.
-                    } catch (IllegalArgumentException | IllegalStateException | IOException e) {
-                        Log.e(LOG_TAG, "Cause: " + e.getCause() + " Message: " + e.getMessage());
-                    }
-                } else {
-                    Log.e(LOG_TAG, "mMediaPlayer is not null.");
-                }
-            } else if (ACTION_PLAY.equals(action)) {
-                // TODO Don't reset player if current track is already loaded and/or playing/paused/finished
-                mMediaPlayer.reset();
-                try {
-                    // Load new source
-                    mMediaPlayer.setDataSource(currentTrack.previewUrl);
-                    mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                        @Override
-                        public boolean onError(MediaPlayer mp, int what, int extra) {
-                            Log.e(LOG_TAG, "MediaPlayer()->OnErrorListener()->OnError() something went wrong");
-                            // TODO Toast!
-                            // The MediaPlayer has moved to the Error state. Reset.
-                            mp.reset();
-                            return false;
-                        }
-                    });
-                    mMediaPlayer.setOnPreparedListener(this);
-                    mMediaPlayer.prepareAsync();
-                } catch (IllegalArgumentException | IllegalStateException | IOException e) {
-                    Log.e(LOG_TAG, "Cause: " + e.getCause() + " Message: " + e.getMessage());
-                }
-            }
+            TopTracksData topTrack = mTopTracksData.get(mCurrentTrackPosition);
+            Log.v(LOG_TAG, topTrack.albumTitle);
+            playTrack(topTrack);
         }
         // START_STICKY tells the service to continue running until explicitly stopped.
         // the service can be stopped with stopSelf() or stopService(Intent service).
         // Todo perform cleanup!
         return START_STICKY;
+    }
+
+    private void playTrack(TopTracksData topTrack) {
+        if (mMediaPlayer == null) {
+            // Initialize Media player
+            mMediaPlayer = new MediaPlayer();
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+        } else {
+            mMediaPlayer.reset();
+        }
+        mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.e(LOG_TAG, "MediaPlayer()->OnErrorListener()->OnError() something went wrong");
+                // TODO Toast!
+                // The MediaPlayer has moved to the Error state. Reset.
+                mp.reset();
+                return false;
+            }
+        });
+        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                Log.v("OnCompletionListener: ", "Track completed. starting next...");
+                playTrack(getNextTrack());
+            }
+        });
+        try {
+            mMediaPlayer.setDataSource(topTrack.previewUrl);
+            mMediaPlayer.setOnPreparedListener(this);
+            mMediaPlayer.prepareAsync(); // Prepare async to prevent blocking main thread.
+        } catch (IllegalArgumentException | IllegalStateException | IOException e) {
+            Log.e(LOG_TAG, "Cause: " + e.getCause() + " Message: " + e.getMessage());
+        }
+    }
+
+    public TopTracksData getNextTrack() {
+        mCurrentTrackPosition++;
+        if (mCurrentTrackPosition != mTopTracksData.size()) {
+            return mTopTracksData.get(mCurrentTrackPosition);
+        } else { // End of track list
+            mCurrentTrackPosition = 0;
+            return mTopTracksData.get(mCurrentTrackPosition);
+        }
     }
 
     @Override
