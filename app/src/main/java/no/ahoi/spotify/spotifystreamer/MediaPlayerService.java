@@ -32,7 +32,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) { // Do not call directly
         // onStartCommand is called when the service is requested to start by a component (activity)
-        Log.v("onHandleIntent", "works");
         if (intent != null && intent.getAction() != null && intent.getExtras() != null &&
                 intent.getExtras().containsKey("topTrack")) {
             final String action = intent.getAction();
@@ -41,7 +40,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 Log.v("ACTION: ", action);
                 Log.v(LOG_TAG, mTopTrack.albumTitle);
 
-                // Todo perform cleanup!
                 if (mMediaPlayer == null) {
                     // Initialize Media player
                     mMediaPlayer = new MediaPlayer();
@@ -67,9 +65,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                     Log.e(LOG_TAG, "mMediaPlayer is not null.");
                 }
             } else if (ACTION_PLAY.equals(action)) {
-                if (mMediaPlayer == null) {
-                    Log.e(LOG_TAG, "mMediaPlayer should not be null!");
-                }
+                // TODO Don't reset player if current track is already loaded and/or playing/paused/finished
                 mMediaPlayer.reset();
                 try {
                     // Load new source
@@ -93,6 +89,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
         // START_STICKY tells the service to continue running until explicitly stopped.
         // the service can be stopped with stopSelf() or stopService(Intent service).
+        // Todo perform cleanup!
         return START_STICKY;
     }
 

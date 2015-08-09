@@ -226,12 +226,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         }
 
         if (mService == null) {
-            Log.v("MSERVICE", "IS NULL!!");
+            Log.e("mService", "IS NULL!!");
         } else {
             if (mService.mMediaPlayer == null) {
-                Log.v("MMEDIAPLAYER", "IS NULL!!");
+                Log.e("mMediaPlayer", "IS NULL!!");
             }
         }
+        Log.e(TAG, "command: " + command);
         return null;
     }
 
