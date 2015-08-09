@@ -16,9 +16,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 
+import java.util.ArrayList;
+
 
 public class SpotifyStreamerActivity extends AppCompatActivity implements SearchArtistFragment.OnArtistSelectedListener, TopTracksFragment.OnTopTrackSelectedListener {
-    private static final String TAG = SpotifyStreamerActivity.class.getSimpleName();
+    private static final String LOG_TAG = SpotifyStreamerActivity.class.getSimpleName();
     ActionBar mActionBar;
     MediaPlayerService mService;
     Boolean mBound = false;
@@ -36,7 +38,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             mActionBar.setDisplayUseLogoEnabled(true);
             mActionBar.setDisplayShowHomeEnabled(true);
         } else {
-            Log.v(TAG, " getSupportActionBar() returned null");
+            Log.v(LOG_TAG, " getSupportActionBar() returned null");
         }
 
         // Check that the activity is using the layout version with the container FrameLayout
@@ -83,7 +85,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     }
 
     public void onArtistSelected(ArtistData artistData) {
-        Log.v(TAG, " spotify ID: " + artistData.spotifyId + " name: " + artistData.name);
+        Log.v(LOG_TAG, " spotify ID: " + artistData.spotifyId + " name: " + artistData.name);
         
         // Hide keyboard
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -106,31 +108,27 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         setActionBarData(getString(R.string.top_tracks), artistData.name);
     }
 
-    public void onTopTrackSelected(TopTracksData topTrack, ArtistData artistData) {
+    public void onTopTrackSelected(ArtistData artistData, ArrayList<TopTracksData> topTracksData, Integer trackPosition) {
+        /*
+         * To allow the service to play the next song when current is finished, even if the
+         * activity or fragment is destroyed, we send the complete track list to the service.
+
+         * To update fragment ui when next song starts playing, we send all track info to fragment
+         * as well. Whenever the fragment view resumes, we get the track position from the service
+         * and update ui if needed.
+         * If service is killed (f.ex after being inactive), we can play song from fragment.
+         */
+
         // show PlayTrackFragment
         FragmentManager fm = getSupportFragmentManager();
-        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(topTrack, artistData);
+        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(artistData, topTracksData, trackPosition);
         playTrackFragment.show(fm, "dialog_play_track");
 
-
-        // Prepare track for MediaPlayerService
-        Intent intent = new Intent(this, MediaPlayerService.class);
-        Bundle args = new Bundle();
-        args.putParcelable("topTrack", topTrack);
-        intent.putExtras(args);
-        // TODO mBound is false when activity is killed (home button is pressed). check if mediaplayer is running.
-        if (!mBound) {
-            // First load
-            intent.setAction("no.ahoi.spotify.spotifystreamer.action.INITIATE");
-        } else {
-            // MediaPlayerService is already running. Play selected track.
-            intent.setAction("no.ahoi.spotify.spotifystreamer.action.START");
+        if (!mBound) { // First load
+            startMediaPlayer(topTracksData, trackPosition, "INITIATE");
+        } else { // MediaPlayerService is already running. Play selected track.
+            startMediaPlayer(topTracksData, trackPosition, "START");
         }
-        // Run MediaPlayer Service and bind to it
-        this.startService(intent);
-        bindService(intent, mConnection, 0);
-
-
     }
 
     @Override
@@ -201,6 +199,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         if (mBound && mService != null && mService.mMediaPlayer != null) {
             MediaPlayer mp = mService.mMediaPlayer;
             switch (command) {
+                // TODO find better return solution
                 case "start":
                     if (!mp.isPlaying()) {
                         mp.start();
@@ -222,6 +221,11 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                 case "seekTo":
                     mp.seekTo(position * 1000);
                     return true;
+                case "next":
+                    // TODO GET array list size, start from 0 if last song, else play next in list
+
+                    //startMediaPlayer(topTracksData, trackPosition, "START");
+                    return true;
             }
         }
 
@@ -232,7 +236,6 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                 Log.e("mMediaPlayer", "IS NULL!!");
             }
         }
-        Log.e(TAG, "command: " + command);
         return null;
     }
 
@@ -245,6 +248,28 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             times[1] = mService.mMediaPlayer.getCurrentPosition();
             return times;
         } else {
+            return null;
+        }
+    }
+
+    private void startMediaPlayer(ArrayList<TopTracksData> topTracksData, Integer trackPosition, String action) {
+        // Prepare track for MediaPlayerService
+        Intent intent = new Intent(this, MediaPlayerService.class);
+        Bundle args = new Bundle();
+        args.putParcelableArrayList("topTracksdata", topTracksData);
+        args.putInt("trackPosition", trackPosition);
+        intent.putExtras(args);
+        intent.setAction("no.ahoi.spotify.spotifystreamer.action." + action);
+        // Run MediaPlayer Service and bind to it
+        this.startService(intent);
+        bindService(intent, mConnection, 0);
+    }
+
+    private Integer getTrackPosition() {
+        if (mBound && mService != null) {
+            return mService.getTrackPosition();
+        } else {
+            Log.e(LOG_TAG + "->getTrackPosition()", "Could not get current track position");
             return null;
         }
     }

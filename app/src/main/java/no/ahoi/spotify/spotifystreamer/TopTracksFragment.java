@@ -46,7 +46,7 @@ public class TopTracksFragment extends Fragment {
 
     // The container Activity must implement this interface so the fragment can deliver messages
     public interface OnTopTrackSelectedListener {
-        void onTopTrackSelected(TopTracksData topTrack, ArtistData artistdata);
+        void onTopTrackSelected(ArtistData artistdata, ArrayList<TopTracksData> topTracksData, Integer trackPosition);
     }
 
     @Override
@@ -78,8 +78,12 @@ public class TopTracksFragment extends Fragment {
         // Populate list if we already have topTracksData, otherwise fetch it from the spotify API.
         if (savedInstanceState != null && savedInstanceState.containsKey("topTracksData")) {
             mTopTracksData = savedInstanceState.getParcelableArrayList("topTracksData");
-            for(TopTracksData topTrack : mTopTracksData) {
-                mTopTracksAdapter.add(topTrack);
+            if (mTopTracksData != null) {
+                for (TopTracksData topTrack : mTopTracksData) {
+                    mTopTracksAdapter.add(topTrack);
+                }
+            } else {
+                Log.e(LOG_TAG, "mTopTracksData is null.");
             }
 
         } else if (this.getArguments() != null) {
@@ -99,9 +103,8 @@ public class TopTracksFragment extends Fragment {
         listTracks.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Fetch info about clicked top track and send info to host activity
-                TopTracksData topTrack = mTopTracksData.get(position);
-                mCallback.onTopTrackSelected(topTrack, mArtistData);
+                // Send artist info to host activity
+                mCallback.onTopTrackSelected(mArtistData, mTopTracksData, position);
             }
         });
 

@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /*
     Can be called with startService(Intent service); catch (SecurityExcetion)
@@ -24,7 +25,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     private final IBinder mBinder = new LocalBinder();
     MediaPlayer mMediaPlayer;
-    TopTracksData mTopTrack;
+    ArrayList<TopTracksData> mTopTracksData;
+    Integer mCurrentTrackPosition;
 
     public MediaPlayerService() {
     }
@@ -33,12 +35,14 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public int onStartCommand(Intent intent, int flags, int startId) { // Do not call directly
         // onStartCommand is called when the service is requested to start by a component (activity)
         if (intent != null && intent.getAction() != null && intent.getExtras() != null &&
-                intent.getExtras().containsKey("topTrack")) {
+                intent.getExtras().containsKey("topTracksdata")) {
             final String action = intent.getAction();
-            mTopTrack = intent.getExtras().getParcelable("topTrack");
+            mTopTracksData = intent.getExtras().getParcelableArrayList("topTracksdata");
+            mCurrentTrackPosition = intent.getExtras().getInt("trackPosition");
+            TopTracksData currentTrack = mTopTracksData.get(mCurrentTrackPosition);
             if (ACTION_INITIATE.equals(action)) {
                 Log.v("ACTION: ", action);
-                Log.v(LOG_TAG, mTopTrack.albumTitle);
+                Log.v(LOG_TAG, currentTrack.albumTitle);
 
                 if (mMediaPlayer == null) {
                     // Initialize Media player
@@ -55,7 +59,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                         }
                     });
                     try {
-                        mMediaPlayer.setDataSource(mTopTrack.previewUrl);
+                        mMediaPlayer.setDataSource(currentTrack.previewUrl);
                         mMediaPlayer.setOnPreparedListener(this);
                         mMediaPlayer.prepareAsync(); // Prepare async to prevent blocking main thread.
                     } catch (IllegalArgumentException | IllegalStateException | IOException e) {
@@ -69,7 +73,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 mMediaPlayer.reset();
                 try {
                     // Load new source
-                    mMediaPlayer.setDataSource(mTopTrack.previewUrl);
+                    mMediaPlayer.setDataSource(currentTrack.previewUrl);
                     mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                         @Override
                         public boolean onError(MediaPlayer mp, int what, int extra) {
@@ -121,5 +125,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onPrepared(MediaPlayer mp) {
         // Finished preparing. Start playing.
         mp.start();
+    }
+
+    public Integer getTrackPosition() {
+        return mCurrentTrackPosition;
     }
 }

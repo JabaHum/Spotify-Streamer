@@ -14,6 +14,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 /**
  * A dialog fragment with possibility to play and stream track from Spotify's API Wrapper
  */
@@ -30,6 +32,8 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     SeekBar mSeekBar;
     Handler mHandler;
     Runnable mTimeChecker;
+    ArrayList<TopTracksData> mTopTracksData;
+    Integer mTrackPosition;
 
     public PlayTrackFragment() {
         // Required empty public constructor
@@ -48,13 +52,14 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         mActivity = (SpotifyStreamerActivity) getActivity();
     }
 
-    public static PlayTrackFragment newInstance(TopTracksData topTrack, ArtistData artistData) {
+    public static PlayTrackFragment newInstance(ArtistData artistData, ArrayList<TopTracksData> topTracksData, Integer trackPosition) {
         Log.e(LOG_TAG, artistData.imageUrl);
         PlayTrackFragment playTrackFragment = new PlayTrackFragment();
         // Set top track data before returning
         Bundle args = new Bundle();
-        args.putParcelable("topTrack", topTrack);
         args.putParcelable("artistData", artistData);
+        args.putParcelableArrayList("topTracksData", topTracksData);
+        args.putInt("trackPosition", trackPosition);
         playTrackFragment.setArguments(args);
         return playTrackFragment;
     }
@@ -66,12 +71,14 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
 
         // Fetch data from savedInstanceState, else fetch from arguments.
         if (savedInstanceState != null && savedInstanceState.containsKey("topTrack") && savedInstanceState.containsKey("artistData")) {
-            mTopTrack = savedInstanceState.getParcelable("topTrack");
             mArtistData = savedInstanceState.getParcelable("artistData");
+            mTopTrack = savedInstanceState.getParcelable("topTrack");
         } else if (this.getArguments() != null) {
             Bundle bundle = this.getArguments();
-            mTopTrack = bundle.getParcelable("topTrack");
             mArtistData = bundle.getParcelable("artistData");
+            mTopTracksData = bundle.getParcelableArrayList("topTracksData");
+            mTrackPosition = bundle.getInt("trackPosition");
+            mTopTrack = mTopTracksData.get(mTrackPosition);
         } else {
             Log.e(LOG_TAG, " Could not fetch data.");
         }
