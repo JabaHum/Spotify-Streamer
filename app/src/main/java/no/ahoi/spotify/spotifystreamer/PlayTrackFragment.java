@@ -130,15 +130,15 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         switch(v.getId()) {
             case R.id.dialogBtnPlayToggle:
                 Log.v("onClick: ", "start / pause music");
-                Boolean isPlaying = mActivity.trackController("isPlaying");
+                Boolean isPlaying = mActivity.trackController("isPlaying", null);
                 if (isPlaying) {
-                    Boolean trackPaused = mActivity.trackController("pause");
+                    Boolean trackPaused = mActivity.trackController("pause", null);
                     if (trackPaused) {
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
                         removeSeekBarHandler();
                     }
                 } else {
-                    Boolean trackStarted = mActivity.trackController("start");
+                    Boolean trackStarted = mActivity.trackController("start", null);
                     if (trackStarted) {
                         mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
                         updateSeekBarTimes();
@@ -147,37 +147,33 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                 break;
             case R.id.dialogBtnPlayPrevious:
                 Log.v("onClick: ", "play previous track");
+                // TODO Play previous track
                 break;
             case R.id.dialogBtnPlayNext:
                 Log.v("onClick: ", "play next track");
+                // TODO Play next track
                 break;
         }
     }
 
+    // Notification that the SeekBar progress level has changed.
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        // Notification that the progress level has changed.
-        // TODO: set text in time duration
-        // TODO: play song from selected progress
-        // http://stackoverflow.com/questions/6242268/repeat-a-task-with-a-time-delay/6242292#6242292
-        Log.v("onProgressChanged()", "progress selected: " + progress);
+        // Set SeekBar times
         mPlayTimeElapsed.setText(Integer.toString(progress));
-        setTimeLeft(progress);
-
+        mPlayTimeLeft.setText(Integer.toString((progress - mSeekBar.getMax())));
     }
 
+    // Notification that the user has started a SeekBar touch gesture.
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-        // Notification that the user has started a touch gesture.
     }
 
+    // Notification that the user has finished a SeekBar touching gesture.
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        // Notification that the user has finished a touching gesture.
-    }
-
-    private void setTimeLeft(int progress) {
-        mPlayTimeLeft.setText(Integer.toString((progress - mSeekBar.getMax())));
+        // Play song from selected SeekBar progress
+        mActivity.trackController("seekTo", seekBar.getProgress());
     }
 
     @Override
@@ -189,6 +185,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     public void onPause() {
         super.onPause();
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -196,6 +193,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     }
 
     // Update SeekBar times
+    // http://stackoverflow.com/questions/6242268/repeat-a-task-with-a-time-delay/6242292#6242292
     private void updateSeekBarTimes() {
         if (mHandler == null) {
             mHandler = new Handler();

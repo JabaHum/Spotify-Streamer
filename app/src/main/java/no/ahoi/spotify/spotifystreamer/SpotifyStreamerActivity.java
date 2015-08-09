@@ -120,7 +120,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         intent.putExtras(args);
         // TODO mBound is false when activity is killed (home button is pressed). check if mediaplayer is running.
         if (!mBound) {
-            // Firstload
+            // First load
             intent.setAction("no.ahoi.spotify.spotifystreamer.action.INITIATE");
         } else {
             // MediaPlayerService is already running. Play selected track.
@@ -195,7 +195,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         }
     };
 
-    public Boolean trackController(String command) {
+    public Boolean trackController(String command, Integer position) {
         String TAG = "trackController()";
 
         if (mBound && mService != null && mService.mMediaPlayer != null) {
@@ -219,6 +219,9 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                     }
                 case "isPlaying":
                     return mp.isPlaying();
+                case "seekTo":
+                    mp.seekTo(position * 1000);
+                    return true;
             }
         }
 
@@ -234,7 +237,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
 
     public Integer[] updateTimes() {
         // fetch times to update UI
-        if (mBound && mService != null && mService.mMediaPlayer != null && trackController("isPlaying")) {
+        if (mBound && mService != null && mService.mMediaPlayer != null && trackController("isPlaying", null)) {
             Integer[] times = new Integer[2];
             // nitpick: no need to call getDuration() more than once
             times[0] = mService.mMediaPlayer.getDuration();
