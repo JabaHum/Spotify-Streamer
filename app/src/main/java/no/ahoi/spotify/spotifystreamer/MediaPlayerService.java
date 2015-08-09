@@ -69,7 +69,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.v("OnCompletionListener: ", "Track completed. starting next...");
-                playTrack(getNextTrack());
+                playNextTrack();
             }
         });
         try {
@@ -81,14 +81,28 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
     }
 
-    public TopTracksData getNextTrack() {
+    private TopTracksData getNextTrack() {
         mCurrentTrackPosition++;
-        if (mCurrentTrackPosition != mTopTracksData.size()) {
-            return mTopTracksData.get(mCurrentTrackPosition);
-        } else { // End of track list
+        if (mCurrentTrackPosition == mTopTracksData.size()) { // End of track list
             mCurrentTrackPosition = 0;
-            return mTopTracksData.get(mCurrentTrackPosition);
         }
+        return mTopTracksData.get(mCurrentTrackPosition);
+    }
+
+    private TopTracksData getPreviousTrack() {
+        mCurrentTrackPosition--;
+        if (mCurrentTrackPosition == -1) { // End of track list
+            mCurrentTrackPosition = mTopTracksData.size() - 1;
+        }
+        return mTopTracksData.get(mCurrentTrackPosition);
+    }
+
+    protected void playNextTrack() {
+        playTrack(getNextTrack());
+    }
+
+    protected void playPreviousTrack() {
+        playTrack(getPreviousTrack());
     }
 
     @Override

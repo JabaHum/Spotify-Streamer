@@ -152,13 +152,14 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                     }
                 }
                 break;
-            case R.id.dialogBtnPlayPrevious:
-                Log.v("onClick: ", "play previous track");
-                // TODO Play previous track
-                break;
             case R.id.dialogBtnPlayNext:
-                Log.v("onClick: ", "play next track");
-                // TODO Play next track
+                mActivity.trackController("next", null);
+                // TODO update ui (including play button)
+                // use mActivity.getTrackPosition();
+                break;
+            case R.id.dialogBtnPlayPrevious:
+                mActivity.trackController("previous", null);
+                // TODO update ui (including play button)
                 break;
         }
     }

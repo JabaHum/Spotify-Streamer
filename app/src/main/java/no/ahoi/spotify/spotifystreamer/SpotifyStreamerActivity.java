@@ -218,9 +218,10 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                     mp.seekTo(position * 1000);
                     return true;
                 case "next":
-                    // TODO GET array list size, start from 0 if last song, else play next in list
-
-                    //startMediaPlayer(topTracksData, trackPosition);
+                    mService.playNextTrack();
+                    return true;
+                case "previous":
+                    mService.playPreviousTrack();
                     return true;
             }
         }
@@ -260,7 +261,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         bindService(intent, mConnection, 0);
     }
 
-    private Integer getTrackPosition() {
+    protected Integer getTrackPosition() {
         if (mBound && mService != null) {
             return mService.getTrackPosition();
         } else {
