@@ -34,6 +34,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     Runnable mTimeChecker;
     ArrayList<TopTracksData> mTopTracksData;
     Integer mTrackPosition;
+    View mRootView;
 
     public PlayTrackFragment() {
         // Required empty public constructor
@@ -67,7 +68,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.dialog_play_track, container, false);
+        mRootView = inflater.inflate(R.layout.dialog_play_track, container, false);
 
         // Fetch data from savedInstanceState, else fetch from arguments.
         if (savedInstanceState != null && savedInstanceState.containsKey("topTrack") && savedInstanceState.containsKey("artistData")) {
@@ -85,16 +86,12 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
 
         if (mTopTrack != null && mArtistData != null) {
             // Find views
-            TextView artistTitle = (TextView) rootView.findViewById(R.id.dialogArtistTitle);
-            TextView albumTitle = (TextView) rootView.findViewById(R.id.dialogAlbumTitle);
-            TextView trackTitle = (TextView) rootView.findViewById(R.id.dialogTrackTitle);
-            mPlayTimeElapsed = (TextView) rootView.findViewById(R.id.dialogPlayTimeElapsed);
-            mPlayTimeLeft = (TextView) rootView.findViewById(R.id.dialogPlayTimeLeft);
-            ImageView albumCover = (ImageView) rootView.findViewById(R.id.dialogAlbumCover);
-            mPreviousTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayPrevious);
-            mPlayTrackToggle = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayToggle);
-            mNextTrack = (ImageButton) rootView.findViewById(R.id.dialogBtnPlayNext);
-            mSeekBar = (SeekBar) rootView.findViewById(R.id.dialogSeekBar);
+            mPlayTimeElapsed = (TextView) mRootView.findViewById(R.id.dialogPlayTimeElapsed);
+            mPlayTimeLeft = (TextView) mRootView.findViewById(R.id.dialogPlayTimeLeft);
+            mPreviousTrack = (ImageButton) mRootView.findViewById(R.id.dialogBtnPlayPrevious);
+            mPlayTrackToggle = (ImageButton) mRootView.findViewById(R.id.dialogBtnPlayToggle);
+            mNextTrack = (ImageButton) mRootView.findViewById(R.id.dialogBtnPlayNext);
+            mSeekBar = (SeekBar) mRootView.findViewById(R.id.dialogSeekBar);
 
             // Set click listeners
             mPreviousTrack.setOnClickListener(this);
@@ -102,24 +99,12 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
             mNextTrack.setOnClickListener(this);
             mSeekBar.setOnSeekBarChangeListener(this);
 
-            // Set data to each view
-            artistTitle.setText(mArtistData.name);
-            albumTitle.setText(mTopTrack.albumTitle);
-            trackTitle.setText(mTopTrack.trackTitle);
-            // Load album cover
-            if (mTopTrack.albumImageUrlLarge != null) {
-                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
-            } else if (mTopTrack.albumImageUrlSmall != null) {
-                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
-            } else {
-                Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
-            }
-
+            updateUI(mTrackPosition, true);
             updateSeekBarTimes();
         } else {
             Log.e(LOG_TAG, "Could not fetch necessary data");
         }
-        return rootView;
+        return mRootView;
     }
 
     @Override
@@ -134,6 +119,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     @Override
     public void onClick(View v) {
         Log.v(LOG_TAG, v.getId() + "");
+        Integer trackPosition;
         switch(v.getId()) {
             case R.id.dialogBtnPlayToggle:
                 Log.v("onClick: ", "start / pause music");
@@ -141,25 +127,26 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                 if (isPlaying) {
                     Boolean trackPaused = mActivity.trackController("pause", null);
                     if (trackPaused) {
-                        mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
-                        removeSeekBarHandler();
+                        setUIPaused();
                     }
                 } else {
                     Boolean trackStarted = mActivity.trackController("start", null);
                     if (trackStarted) {
-                        mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
-                        updateSeekBarTimes();
+                        setUIPlaying();
                     }
                 }
                 break;
             case R.id.dialogBtnPlayNext:
                 mActivity.trackController("next", null);
-                // TODO update ui (including play button)
-                // use mActivity.getTrackPosition();
+                trackPosition = mActivity.getTrackPosition();
+                updateUI(trackPosition, false);
+                setUIPlaying();
                 break;
             case R.id.dialogBtnPlayPrevious:
                 mActivity.trackController("previous", null);
-                // TODO update ui (including play button)
+                trackPosition = mActivity.getTrackPosition();
+                updateUI(trackPosition, false);
+                setUIPlaying();
                 break;
         }
     }
@@ -200,6 +187,43 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         removeSeekBarHandler();
     }
 
+    private void updateUI(Integer trackPosition, Boolean firstLoad) {
+        if (firstLoad || !mTrackPosition.equals(trackPosition)) {
+            mTrackPosition = trackPosition;
+            mTopTrack = mTopTracksData.get(trackPosition);
+
+            // Find views
+            TextView artistTitle = (TextView) mRootView.findViewById(R.id.dialogArtistTitle);
+            TextView albumTitle = (TextView) mRootView.findViewById(R.id.dialogAlbumTitle);
+            TextView trackTitle = (TextView) mRootView.findViewById(R.id.dialogTrackTitle);
+            ImageView albumCover = (ImageView) mRootView.findViewById(R.id.dialogAlbumCover);
+
+            // Set data to each view
+            artistTitle.setText(mArtistData.name);
+            albumTitle.setText(mTopTrack.albumTitle);
+            trackTitle.setText(mTopTrack.trackTitle);
+
+            // Load album cover
+            if (mTopTrack.albumImageUrlLarge != null) {
+                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
+            } else if (mTopTrack.albumImageUrlSmall != null) {
+                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
+            } else {
+                Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
+            }
+        }
+    }
+
+    private void setUIPlaying() {
+        mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_pause);
+        updateSeekBarTimes();
+    }
+
+    private void setUIPaused() {
+        mPlayTrackToggle.setImageResource(android.R.drawable.ic_media_play);
+        removeSeekBarHandler();
+    }
+
     // Update SeekBar times
     // http://stackoverflow.com/questions/6242268/repeat-a-task-with-a-time-delay/6242292#6242292
     private void updateSeekBarTimes() {
@@ -211,6 +235,13 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
             public void run() {
                 int interval = 200;
                 Integer[] times = mActivity.updateTimes();
+                Integer trackPosition = mActivity.getTrackPosition();
+                // Update UI if song has changed
+                // TODO: use onCompletionListener
+                if (trackPosition != null && !mTrackPosition.equals(trackPosition)) {
+                    updateUI(trackPosition, false);
+                }
+                // get SeekBar times and set progress
                 if (times != null) {
                     // !! will be set every loop when track duration is 100 sek
                     if (mSeekBar.getMax() == 100) {
