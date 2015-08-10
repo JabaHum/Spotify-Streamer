@@ -69,46 +69,38 @@
             android:textSize="14sp"
             android:text="@string/play_time" />
 
-        <LinearLayout
-            android:layout_width="fill_parent"
+        <ImageButton
+            android:id="@+id/dialogBtnPlayPrevious"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/dialogPlayTimeElapsed"
-            android:baselineAligned="false">
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-                <ImageButton
-                    android:id="@+id/dialogBtnPlayPrevious"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:src="@android:drawable/ic_media_previous" />
-            </FrameLayout>
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-                <ImageButton
-                    android:id="@+id/dialogBtnPlayToggle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:src="@android:drawable/ic_media_pause" />
-            </FrameLayout>
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1">
-                <ImageButton
-                    android:id="@+id/dialogBtnPlayNext"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:src="@android:drawable/ic_media_next" />
-            </FrameLayout>
+            android:layout_toStartOf="@+id/dialogBtnPlayToggle"
+            android:layout_toLeftOf="@+id/dialogBtnPlayToggle"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
+            android:src="@android:drawable/ic_media_previous" />
+        <ImageButton
+            android:id="@+id/dialogBtnPlayToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogPlayTimeElapsed"
+            android:layout_centerHorizontal="true"
+            android:layout_marginRight="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:src="@android:drawable/ic_media_pause" />
+        <ImageButton
+            android:id="@+id/dialogBtnPlayNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogPlayTimeElapsed"
+            android:layout_toEndOf="@+id/dialogBtnPlayToggle"
+            android:layout_toRightOf="@+id/dialogBtnPlayToggle"
+            android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
+            android:src="@android:drawable/ic_media_next" />
 
-        </LinearLayout>
     </RelativeLayout>
 
     <ImageView
