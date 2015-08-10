@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialogPlaceholder"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:orientation="horizontal">
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin">
+
+        <TextView
+            android:id="@+id/dialogArtistTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="7dp"
+            android:gravity="center_horizontal"
+            android:textSize="14sp"
+            android:text="@string/app_name" />
+        <TextView
+            android:id="@+id/dialogAlbumTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogArtistTitle"
+            android:paddingBottom="7dp"
+            android:gravity="center_horizontal"
+            android:textSize="14sp"
+            android:text="@string/app_name" />
+        <TextView
+            android:id="@+id/dialogTrackTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogAlbumTitle"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:gravity="center_horizontal"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:text="@string/app_name" />
+
+        <SeekBar
+            android:id="@+id/dialogSeekBar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogTrackTitle" />
+
+
+        <TextView
+            android:id="@+id/dialogPlayTimeElapsed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogSeekBar"
+            android:paddingBottom="10dp"
+            android:textSize="14sp"
+            android:text="@string/play_time" />
+        <TextView
+            android:id="@+id/dialogPlayTimeLeft"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogSeekBar"
+            android:gravity="end"
+            android:textSize="14sp"
+            android:text="@string/play_time" />
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialogPlayTimeElapsed"
+            android:baselineAligned="false">
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/dialogBtnPlayPrevious"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@android:drawable/ic_media_previous" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/dialogBtnPlayToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@android:drawable/ic_media_pause" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+                <ImageButton
+                    android:id="@+id/dialogBtnPlayNext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@android:drawable/ic_media_next" />
+            </FrameLayout>
+
+        </LinearLayout>
+    </RelativeLayout>
+
+    <ImageView
+        android:id="@+id/dialogAlbumCover"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:src="@mipmap/ic_launcher"
+        android:contentDescription="@string/app_name" />
+
+
+</LinearLayout>
