@@ -21,9 +21,11 @@ import java.util.ArrayList;
  */
 public class PlayTrackFragment extends DialogFragment implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private static final String LOG_TAG = PlayTrackFragment.class.getSimpleName();
-    ArtistData mArtistData;
-    TopTracksData mTopTrack;
     SpotifyStreamerActivity mActivity;
+    View mRootView;
+    ArtistData mArtistData;
+    ArrayList<TopTracksData> mTopTracksData;
+    Integer mTrackPosition;
     TextView mPlayTimeElapsed;
     TextView mPlayTimeLeft;
     ImageButton mPreviousTrack;
@@ -32,9 +34,6 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     SeekBar mSeekBar;
     Handler mHandler;
     Runnable mTimeChecker;
-    ArrayList<TopTracksData> mTopTracksData;
-    Integer mTrackPosition;
-    View mRootView;
 
     public PlayTrackFragment() {
         // Required empty public constructor
@@ -71,20 +70,22 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         mRootView = inflater.inflate(R.layout.dialog_play_track, container, false);
 
         // Fetch data from savedInstanceState, else fetch from arguments.
-        if (savedInstanceState != null && savedInstanceState.containsKey("topTrack") && savedInstanceState.containsKey("artistData")) {
+        if (savedInstanceState != null && savedInstanceState.containsKey("topTracksData") &&
+                savedInstanceState.containsKey("artistData") &&
+                savedInstanceState.containsKey("trackPosition")) {
             mArtistData = savedInstanceState.getParcelable("artistData");
-            mTopTrack = savedInstanceState.getParcelable("topTrack");
+            mTopTracksData = savedInstanceState.getParcelableArrayList("topTracksData");
+            mTrackPosition = savedInstanceState.getInt("trackPosition");
         } else if (this.getArguments() != null) {
             Bundle bundle = this.getArguments();
             mArtistData = bundle.getParcelable("artistData");
             mTopTracksData = bundle.getParcelableArrayList("topTracksData");
             mTrackPosition = bundle.getInt("trackPosition");
-            mTopTrack = mTopTracksData.get(mTrackPosition);
         } else {
             Log.e(LOG_TAG, " Could not fetch data.");
         }
 
-        if (mTopTrack != null && mArtistData != null) {
+        if (mArtistData != null && mTopTracksData != null && mTrackPosition != null) {
             // Find views
             mPlayTimeElapsed = (TextView) mRootView.findViewById(R.id.dialogPlayTimeElapsed);
             mPlayTimeLeft = (TextView) mRootView.findViewById(R.id.dialogPlayTimeLeft);
@@ -109,9 +110,10 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
 
     @Override
      public void onSaveInstanceState(Bundle outState) {
-        if (mTopTrack != null && mArtistData != null) {
-            outState.putParcelable("topTrack", mTopTrack);
+        if (mArtistData != null && mTopTracksData != null && mTrackPosition != null) {
             outState.putParcelable("artistData", mArtistData);
+            outState.putParcelableArrayList("topTracksData", mTopTracksData);
+            outState.putInt("trackPosition", mTrackPosition);
         }
         super.onSaveInstanceState(outState);
     }
@@ -190,7 +192,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     private void updateUI(Integer trackPosition, Boolean firstLoad) {
         if (firstLoad || !mTrackPosition.equals(trackPosition)) {
             mTrackPosition = trackPosition;
-            mTopTrack = mTopTracksData.get(trackPosition);
+            TopTracksData topTrack = mTopTracksData.get(trackPosition);
 
             // Find views
             TextView artistTitle = (TextView) mRootView.findViewById(R.id.dialogArtistTitle);
@@ -200,14 +202,14 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
 
             // Set data to each view
             artistTitle.setText(mArtistData.name);
-            albumTitle.setText(mTopTrack.albumTitle);
-            trackTitle.setText(mTopTrack.trackTitle);
+            albumTitle.setText(topTrack.albumTitle);
+            trackTitle.setText(topTrack.trackTitle);
 
             // Load album cover
-            if (mTopTrack.albumImageUrlLarge != null) {
-                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
-            } else if (mTopTrack.albumImageUrlSmall != null) {
-                Picasso.with(getActivity()).load(mTopTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
+            if (topTrack.albumImageUrlLarge != null) {
+                Picasso.with(getActivity()).load(topTrack.albumImageUrlLarge).placeholder(R.mipmap.no_image).into(albumCover);
+            } else if (topTrack.albumImageUrlSmall != null) {
+                Picasso.with(getActivity()).load(topTrack.albumImageUrlSmall).placeholder(R.mipmap.no_image).into(albumCover);
             } else {
                 Picasso.with(getActivity()).load(R.mipmap.no_image).into(albumCover);
             }
