@@ -84,6 +84,11 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
     public void onArtistSelected(ArtistData artistData) {
         Log.v(LOG_TAG, " spotify ID: " + artistData.spotifyId + " name: " + artistData.name);
         

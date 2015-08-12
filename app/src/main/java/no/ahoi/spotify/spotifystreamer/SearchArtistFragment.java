@@ -69,7 +69,7 @@ public class SearchArtistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_search_artist, container, false);
+        View rootView = inflater.inflate(R.layout.activity_spotify_streamer, container, false);
 
         mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), new ArrayList<ArtistData>());
         mExecuteAdapter = true;
