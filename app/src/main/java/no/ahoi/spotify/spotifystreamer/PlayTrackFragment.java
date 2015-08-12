@@ -53,7 +53,6 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     }
 
     public static PlayTrackFragment newInstance(ArtistData artistData, ArrayList<TopTracksData> topTracksData, Integer trackPosition) {
-        Log.e(LOG_TAG, artistData.imageUrl);
         PlayTrackFragment playTrackFragment = new PlayTrackFragment();
         // Set top track data before returning
         Bundle args = new Bundle();
@@ -101,7 +100,15 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
             mSeekBar.setOnSeekBarChangeListener(this);
 
             updateUI(mTrackPosition, true);
-            updateSeekBarTimes();
+            setUIPlaying(); // Updates SeekBar
+
+            // Special case for when track is paused and reselected from TopTracksFragment
+            if (mActivity != null && mActivity.trackController("isPlaying", null) != null &&
+                    !mActivity.trackController("isPlaying", null)) {
+                // TODO: This does not load SeekBar properly. Fix it.
+                setUIPaused();
+            }
+
         } else {
             Log.e(LOG_TAG, "Could not fetch necessary data");
         }
@@ -127,13 +134,11 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                 Log.v("onClick: ", "start / pause music");
                 Boolean isPlaying = mActivity.trackController("isPlaying", null);
                 if (isPlaying) {
-                    Boolean trackPaused = mActivity.trackController("pause", null);
-                    if (trackPaused) {
+                    if (mActivity.trackController("pause", null)) { // if track paused
                         setUIPaused();
                     }
                 } else {
-                    Boolean trackStarted = mActivity.trackController("start", null);
-                    if (trackStarted) {
+                    if (mActivity.trackController("start", null)) { // if track started
                         setUIPlaying();
                     }
                 }
@@ -189,8 +194,8 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         removeSeekBarHandler();
     }
 
-    private void updateUI(Integer trackPosition, Boolean firstLoad) {
-        if (firstLoad || !mTrackPosition.equals(trackPosition)) {
+    private void updateUI(Integer trackPosition, Boolean forceUpdate) {
+        if (forceUpdate || !mTrackPosition.equals(trackPosition)) {
             mTrackPosition = trackPosition;
             TopTracksData topTrack = mTopTracksData.get(trackPosition);
 
