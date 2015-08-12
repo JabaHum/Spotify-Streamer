@@ -24,6 +24,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     ActionBar mActionBar;
     MediaPlayerService mService;
     Boolean mBound = false;
+    Boolean mTwoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +38,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             mActionBar.setLogo(R.mipmap.ic_launcher);
             mActionBar.setDisplayUseLogoEnabled(true);
             mActionBar.setDisplayShowHomeEnabled(true);
-        } else {
-            Log.v(LOG_TAG, " getSupportActionBar() returned null");
         }
 
         // Check that the activity is using the layout version with the container FrameLayout
         if (findViewById(R.id.SearchFragmentPlaceholder) != null) {
+            // Check if activity is in two-pane mode
+            mTwoPane = (findViewById(R.id.searchArtistsContainer) != null);
+
             // If we're being restored from a previous state, then we don't need to do anything
             // and should return or else we could end up with overlapping fragments
             if (savedInstanceState != null) {
@@ -51,9 +53,10 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
 
             // Create a new fragment to be placed in the activity layout
             SearchArtistFragment searchArtistFragment = new SearchArtistFragment();
-            // In the case this activity was started with special instructions from an Intent,
-            // pass the Intent's extras tot he fragment as arguments.
-            searchArtistFragment.setArguments(getIntent().getExtras());
+            // Pass two-pane info to fragment
+            Bundle args = new Bundle();
+            args.putBoolean("twoPane", mTwoPane);
+            searchArtistFragment.setArguments(args);
             // Add the fragment to the 'spotifySearchFragmentContainer' FrameLayout
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.SearchFragmentPlaceholder, searchArtistFragment).commit();
@@ -100,15 +103,25 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         TopTracksFragment topTracksFragment = new TopTracksFragment();
         Bundle args = new Bundle();
         args.putParcelable("artistData", artistData);
+        args.putBoolean("twoPane", mTwoPane);
         topTracksFragment.setArguments(args);
 
         // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.SearchFragmentPlaceholder, topTracksFragment)
-                .addToBackStack(null)
-                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-                .commit();
+        // TODO just show two-pane fragment, don't replace it.
+        if (mTwoPane) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.SearchFragmentPlaceholder, topTracksFragment)
+                    .addToBackStack(null)
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    .commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.SearchFragmentPlaceholder, topTracksFragment)
+                    .addToBackStack(null)
+                    .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                    .commit();
+        }
 
         setActionBarData(getString(R.string.top_tracks), artistData.name);
     }
@@ -121,12 +134,11 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
          * To update fragment ui when next song starts playing, we send all track info to fragment
          * as well. Whenever the fragment view resumes, we get the track position from the service
          * and update ui if needed.
-         * If service is killed (f.ex after being inactive), we can play song from fragment.
          */
 
         // show PlayTrackFragment
         FragmentManager fm = getSupportFragmentManager();
-        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(artistData, topTracksData, trackPosition);
+        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(artistData, topTracksData, trackPosition, mTwoPane);
         playTrackFragment.show(fm, "dialog_play_track");
 
         startMediaPlayer(topTracksData, trackPosition);

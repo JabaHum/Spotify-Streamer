@@ -34,6 +34,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     SeekBar mSeekBar;
     Handler mHandler;
     Runnable mTimeChecker;
+    Boolean mTwoPane;
 
     public PlayTrackFragment() {
         // Required empty public constructor
@@ -43,22 +44,29 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Open dialog in full screen
-        setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme_AppCompat);
-
+        if (savedInstanceState != null && savedInstanceState.containsKey("twoPane")) {
+            mTwoPane = savedInstanceState.getBoolean("twoPane");
+        } else if (this.getArguments() != null) {
+            mTwoPane = this.getArguments().getBoolean("twoPane");
+        }
+        if (!mTwoPane) {
+            // Open dialog in full screen
+            setStyle(DialogFragment.STYLE_NORMAL, R.style.AppTheme_AppCompat);
+        }
         // Call to SpotifyStreamerActivity should not be done if fragment is to be
         // called from multiple activities. Since we only have one activity, this is OK.
         // http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
         mActivity = (SpotifyStreamerActivity) getActivity();
     }
 
-    public static PlayTrackFragment newInstance(ArtistData artistData, ArrayList<TopTracksData> topTracksData, Integer trackPosition) {
+    public static PlayTrackFragment newInstance(ArtistData artistData, ArrayList<TopTracksData> topTracksData, Integer trackPosition, Boolean twoPane) {
         PlayTrackFragment playTrackFragment = new PlayTrackFragment();
         // Set top track data before returning
         Bundle args = new Bundle();
         args.putParcelable("artistData", artistData);
         args.putParcelableArrayList("topTracksData", topTracksData);
         args.putInt("trackPosition", trackPosition);
+        args.putBoolean("twoPane", twoPane);
         playTrackFragment.setArguments(args);
         return playTrackFragment;
     }
@@ -117,10 +125,11 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
 
     @Override
      public void onSaveInstanceState(Bundle outState) {
-        if (mArtistData != null && mTopTracksData != null && mTrackPosition != null) {
+        if (mArtistData != null && mTopTracksData != null && mTrackPosition != null && mTwoPane != null) {
             outState.putParcelable("artistData", mArtistData);
             outState.putParcelableArrayList("topTracksData", mTopTracksData);
             outState.putInt("trackPosition", mTrackPosition);
+            outState.putBoolean("twoPane", mTwoPane);
         }
         super.onSaveInstanceState(outState);
     }

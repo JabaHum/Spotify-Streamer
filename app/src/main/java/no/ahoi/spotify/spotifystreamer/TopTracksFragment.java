@@ -40,6 +40,7 @@ public class TopTracksFragment extends Fragment {
     private ArrayList<TopTracksData> mTopTracksData;
     private ArtistData mArtistData;
     private OnTopTrackSelectedListener mCallback;
+    Boolean mTwoPane;
 
     public TopTracksFragment() {
     }
@@ -66,7 +67,22 @@ public class TopTracksFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_spotify_streamer, container, false);
+        if (this.getArguments() != null) {
+            Bundle bundle = this.getArguments();
+            mTwoPane = bundle.getBoolean("twoPane");
+        } else if (savedInstanceState != null && savedInstanceState.containsKey("twoPane")) {
+            mTwoPane = savedInstanceState.getBoolean("twoPane");
+        } else {
+            Log.e(LOG_TAG, "twoPane info is missing.");
+            return null;
+        }
+        Integer layoutId;
+        if (mTwoPane) {
+            layoutId = R.layout.activity_spotify_streamer;
+        } else {
+            layoutId = R.layout.fragment_top_tracks;
+        }
+        View rootView = inflater.inflate(layoutId, container, false);
 
         mTopTracksAdapter = new TopTracksSearchAdapter(getActivity(), new ArrayList<TopTracksData>());
 
@@ -113,9 +129,10 @@ public class TopTracksFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mTopTracksData != null && !mTopTracksData.isEmpty() && mArtistData != null) {
+        if (mTopTracksData != null && !mTopTracksData.isEmpty() && mArtistData != null && mTwoPane != null) {
             outState.putParcelableArrayList("topTracksData", mTopTracksData);
             outState.putParcelable("artistData", mArtistData);
+            outState.putBoolean("twoPane", mTwoPane);
         }
         super.onSaveInstanceState(outState);
     }

@@ -43,6 +43,7 @@ public class SearchArtistFragment extends Fragment {
     private OnArtistSelectedListener mCallback;
     private ArrayList<ArtistData> mArtistData;
     private Boolean mExecuteAdapter;
+    Boolean mTwoPane;
 
     public SearchArtistFragment() {
     }
@@ -69,7 +70,25 @@ public class SearchArtistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_spotify_streamer, container, false);
+        // TODO: EditText struggle with focus in two-pane mode on first load.
+        if (this.getArguments() != null) {
+            // Expects artist Spotify ID
+            Bundle bundle = this.getArguments();
+            mTwoPane = bundle.getBoolean("twoPane");
+        } else if (savedInstanceState != null && savedInstanceState.containsKey("twoPane")) {
+            mTwoPane = savedInstanceState.getBoolean("twoPane");
+        } else {
+            Log.e(LOG_TAG, "twoPane info is missing.");
+            return null;
+        }
+
+        Integer layoutId;
+        if (mTwoPane) {
+            layoutId = R.layout.activity_spotify_streamer;
+        } else {
+            layoutId = R.layout.fragment_search_artist;
+        }
+        View rootView = inflater.inflate(layoutId, container, false);
 
         mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), new ArrayList<ArtistData>());
         mExecuteAdapter = true;
@@ -131,8 +150,9 @@ public class SearchArtistFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mArtistData != null && !mArtistData.isEmpty()) {
+        if (mArtistData != null && !mArtistData.isEmpty() && mTwoPane != null) {
             outState.putParcelableArrayList("artistData", mArtistData);
+            outState.putBoolean("twoPane", mTwoPane);
         }
         super.onSaveInstanceState(outState);
     }
