@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 
 public class MediaPlayerService extends Service implements MediaPlayer.OnPreparedListener {
-    private static final String LOG_TAG = PlayTrackFragment.class.getSimpleName();
+    private static final String LOG_TAG = MediaPlayerService.class.getSimpleName();
 
     private final IBinder mBinder = new LocalBinder();
     MediaPlayer mMediaPlayer;
@@ -34,11 +34,34 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         // onStartCommand is called when the service is requested to start by a component (activity)
         if (intent != null && intent.getExtras() != null &&
                 intent.getExtras().containsKey("topTracksdata")) {
-            mTopTracksData = intent.getExtras().getParcelableArrayList("topTracksdata");
-            mCurrentTrackPosition = intent.getExtras().getInt("trackPosition");
-            TopTracksData topTrack = mTopTracksData.get(mCurrentTrackPosition);
-            Log.v(LOG_TAG, topTrack.albumTitle);
-            playTrack(topTrack);
+
+            ArrayList<TopTracksData> topTracksData = intent.getExtras().getParcelableArrayList("topTracksdata");
+            Integer trackPosition = intent.getExtras().getInt("trackPosition");
+            if (topTracksData != null && !topTracksData.isEmpty()) {
+                if (mTopTracksData == null && mCurrentTrackPosition == null) {
+                    // No previous data found. Play track.
+                    Log.v(LOG_TAG, "No previous data found. Play track.");
+                    mTopTracksData = topTracksData;
+                    mCurrentTrackPosition = trackPosition;
+                    playTrack(mTopTracksData.get(mCurrentTrackPosition));
+                } else {
+                    if (mTopTracksData != null && mCurrentTrackPosition != null) {
+                        if (!mCurrentTrackPosition.equals(trackPosition) ||
+                                !mTopTracksData.get(mCurrentTrackPosition).id.equals(topTracksData.get(mCurrentTrackPosition).id)) {
+                            // Another track has been selected. Play new track.
+                            Log.v(LOG_TAG, "Another track has been selected. Play new track.");
+                            mTopTracksData = topTracksData;
+                            mCurrentTrackPosition = trackPosition;
+                            playTrack(mTopTracksData.get(mCurrentTrackPosition));
+                        } else {
+                            // Track is already loaded. Don't start over.
+                            Log.v(LOG_TAG, "Track is already loaded. Don't start over.");
+                        }
+                    }
+                }
+            } else {
+                Log.e(LOG_TAG, "topTracksData is missing.");
+            }
         }
         // START_STICKY tells the service to continue running until explicitly stopped.
         // the service can be stopped with stopSelf() or stopService(Intent service).
