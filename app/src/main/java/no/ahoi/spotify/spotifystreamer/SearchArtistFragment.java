@@ -70,7 +70,6 @@ public class SearchArtistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        // TODO: EditText struggle with focus in two-pane mode on first load.
         if (this.getArguments() != null) {
             // Expects artist Spotify ID
             Bundle bundle = this.getArguments();
@@ -104,6 +103,10 @@ public class SearchArtistFragment extends Fragment {
             }
         }
         EditText searchArtists = (EditText) rootView.findViewById(R.id.searchArtists);
+        // EditText struggle with focus in two-pane mode on first load.
+        if (mTwoPane) {
+            searchArtists.requestFocus();
+        }
 
         searchArtists.addTextChangedListener(new TextWatcher() {
             @Override

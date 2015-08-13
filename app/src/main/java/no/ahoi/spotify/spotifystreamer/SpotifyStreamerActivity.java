@@ -97,7 +97,6 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         
         // Hide keyboard
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
         imm.hideSoftInputFromWindow(findViewById(R.id.searchArtists).getWindowToken(), 0);
 
         TopTracksFragment topTracksFragment = new TopTracksFragment();
