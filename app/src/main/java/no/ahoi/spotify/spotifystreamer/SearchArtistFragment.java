@@ -77,6 +77,8 @@ public class SearchArtistFragment extends Fragment {
         } else if (savedInstanceState != null && savedInstanceState.containsKey("twoPane")) {
             mTwoPane = savedInstanceState.getBoolean("twoPane");
         } else {
+            // Since we don't trigger two-pane mode with a fragment transaction, we can be certain
+            // that we are in two-pane mode, because the boolean is passed otherwise.
             mTwoPane = true;
         }
 
