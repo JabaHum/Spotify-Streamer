@@ -42,6 +42,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         // Check if activity is in two-pane mode
         if (findViewById(R.id.topTracksContainer) != null) {
             mTwoPane = true;
+            // SearchArtistFragment is added statically.
         } else {
             // TODO: If we're being restored from a previous state, then we don't need to do
             // anything and should return or else we could end up with overlapping fragments
@@ -49,6 +50,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                 return;
             }*/
             mTwoPane = false;
+            // Add SearchArtistFragment Dynamically:
             // Create a new fragment to be placed in the activity layout
             SearchArtistFragment searchArtistFragment = new SearchArtistFragment();
             // Pass two-pane info to fragment
@@ -84,11 +86,6 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
     }
 
     public void onArtistSelected(ArtistData artistData) {
