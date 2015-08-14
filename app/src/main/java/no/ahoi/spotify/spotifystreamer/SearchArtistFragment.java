@@ -70,20 +70,19 @@ public class SearchArtistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
+        // Check if we are in two-pane mode
         if (this.getArguments() != null) {
-            // Expects artist Spotify ID
             Bundle bundle = this.getArguments();
             mTwoPane = bundle.getBoolean("twoPane");
         } else if (savedInstanceState != null && savedInstanceState.containsKey("twoPane")) {
             mTwoPane = savedInstanceState.getBoolean("twoPane");
         } else {
-            Log.e(LOG_TAG, "twoPane info is missing.");
-            return null;
+            mTwoPane = true;
         }
 
         Integer layoutId;
         if (mTwoPane) {
-            layoutId = R.layout.activity_spotify_streamer;
+            layoutId = R.layout.fragment_search_artist;
         } else {
             layoutId = R.layout.fragment_search_artist;
         }
@@ -103,10 +102,6 @@ public class SearchArtistFragment extends Fragment {
             }
         }
         EditText searchArtists = (EditText) rootView.findViewById(R.id.searchArtists);
-        // EditText struggle with focus in two-pane mode on first load.
-        if (mTwoPane) {
-            searchArtists.requestFocus();
-        }
 
         searchArtists.addTextChangedListener(new TextWatcher() {
             @Override

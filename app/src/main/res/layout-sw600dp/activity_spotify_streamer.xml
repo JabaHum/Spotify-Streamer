@@ -1,53 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/SearchFragmentPlaceholder"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:divider="?android:dividerHorizontal"
     android:orientation="horizontal"
     android:baselineAligned="false">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/searchArtistsContainer"
+    <!-- This is a two-pane layout for the Items Master-Detail flow. -->
+
+    <fragment
+        android:id="@+id/SearchArtistsFragment"
+        class="no.ahoi.spotify.spotifystreamer.SearchArtistFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin">
+        tools:layout="@layout/fragment_search_artist" />
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/searchArtists"
-            android:layout_alignParentTop="true"
-            android:layout_centerHorizontal="true"
-            android:hint="@string/search_artist"
-            android:imeOptions="actionDone"
-            android:singleLine="true" />
-
-        <ListView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/listArtists"
-            android:layout_below="@+id/searchArtists"
-            android:layout_centerHorizontal="true" />
-    </RelativeLayout>
-
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <FrameLayout
         android:id="@+id/topTracksContainer"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin">
+        android:layout_weight="1" />
 
-        <ListView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/listTracks" />
-    </RelativeLayout>
 </LinearLayout>

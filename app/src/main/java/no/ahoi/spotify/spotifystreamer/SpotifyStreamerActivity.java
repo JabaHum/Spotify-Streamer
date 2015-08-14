@@ -18,7 +18,6 @@ import android.view.inputmethod.InputMethodManager;
 
 import java.util.ArrayList;
 
-
 public class SpotifyStreamerActivity extends AppCompatActivity implements SearchArtistFragment.OnArtistSelectedListener, TopTracksFragment.OnTopTrackSelectedListener {
     private static final String LOG_TAG = SpotifyStreamerActivity.class.getSimpleName();
     ActionBar mActionBar;
@@ -40,27 +39,27 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             mActionBar.setDisplayShowHomeEnabled(true);
         }
 
-        // Check that the activity is using the layout version with the container FrameLayout
-        if (findViewById(R.id.SearchFragmentPlaceholder) != null) {
-            // Check if activity is in two-pane mode
-            mTwoPane = (findViewById(R.id.searchArtistsContainer) != null);
-
-            // If we're being restored from a previous state, then we don't need to do anything
-            // and should return or else we could end up with overlapping fragments
-            if (savedInstanceState != null) {
+        // Check if activity is in two-pane mode
+        if (findViewById(R.id.topTracksContainer) != null) {
+            mTwoPane = true;
+        } else {
+            // TODO: If we're being restored from a previous state, then we don't need to do
+            // anything and should return or else we could end up with overlapping fragments
+            /*if (savedInstanceState != null) {
                 return;
-            }
-
+            }*/
+            mTwoPane = false;
             // Create a new fragment to be placed in the activity layout
             SearchArtistFragment searchArtistFragment = new SearchArtistFragment();
             // Pass two-pane info to fragment
             Bundle args = new Bundle();
             args.putBoolean("twoPane", mTwoPane);
             searchArtistFragment.setArguments(args);
-            // Add the fragment to the 'spotifySearchFragmentContainer' FrameLayout
+            // Add the fragment to the 'searchArtistsFragmentPlaceholder' FrameLayout
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.SearchFragmentPlaceholder, searchArtistFragment).commit();
+                    .add(R.id.searchArtistsFragmentPlaceholder, searchArtistFragment).commit();
         }
+
     }
 
     @Override
@@ -110,13 +109,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         // TODO just show two-pane fragment, don't replace it.
         if (mTwoPane) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.SearchFragmentPlaceholder, topTracksFragment)
+                    .replace(R.id.topTracksContainer, topTracksFragment)
                     .addToBackStack(null)
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                     .commit();
         } else {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.SearchFragmentPlaceholder, topTracksFragment)
+                    .replace(R.id.searchArtistsFragmentPlaceholder, topTracksFragment)
                     .addToBackStack(null)
                     .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
                     .commit();
@@ -284,5 +283,9 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             Log.e(LOG_TAG + "->getTrackPosition()", "Could not get current track position");
             return null;
         }
+    }
+
+    protected Boolean isTwoPane() {
+        return mTwoPane;
     }
 }

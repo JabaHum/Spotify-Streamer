@@ -30,7 +30,6 @@ import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.RetrofitError;
 
-
 /**
  * lists top tracks for an artist by fetching data from the Spotify Web API
  */
@@ -67,6 +66,7 @@ public class TopTracksFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         if (this.getArguments() != null) {
             Bundle bundle = this.getArguments();
             mTwoPane = bundle.getBoolean("twoPane");
@@ -76,13 +76,7 @@ public class TopTracksFragment extends Fragment {
             Log.e(LOG_TAG, "twoPane info is missing.");
             return null;
         }
-        Integer layoutId;
-        if (mTwoPane) {
-            layoutId = R.layout.activity_spotify_streamer;
-        } else {
-            layoutId = R.layout.fragment_top_tracks;
-        }
-        View rootView = inflater.inflate(layoutId, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
         mTopTracksAdapter = new TopTracksSearchAdapter(getActivity(), new ArrayList<TopTracksData>());
 
