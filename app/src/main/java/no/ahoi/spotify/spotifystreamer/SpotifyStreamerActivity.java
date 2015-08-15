@@ -103,7 +103,6 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
 
         // Replace whatever is in the spotifySearchFragmentContainer view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        // TODO just show two-pane fragment, don't replace it.
         if (mTwoPane) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.topTracksContainer, topTracksFragment)
