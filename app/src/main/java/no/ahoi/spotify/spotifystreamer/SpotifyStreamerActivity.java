@@ -39,6 +39,14 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             mActionBar.setDisplayShowHomeEnabled(true);
         }
 
+        // Rebind service
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean("bound")) {
+                Intent intent = new Intent(this, MediaPlayerService.class);
+                bindService(intent, mConnection, 0);
+            }
+        }
+
         // Check if activity is in two-pane mode
         if (findViewById(R.id.topTracksContainer) != null) {
             mTwoPane = true;
@@ -69,6 +77,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         if (mTwoPane != null) {
             outState.putBoolean("twoPane", mTwoPane);
         }
+        outState.putBoolean("bound", mBound);
         super.onSaveInstanceState(outState);
     }
 
