@@ -296,8 +296,4 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             return null;
         }
     }
-
-    protected Boolean isTwoPane() {
-        return mTwoPane;
-    }
 }
