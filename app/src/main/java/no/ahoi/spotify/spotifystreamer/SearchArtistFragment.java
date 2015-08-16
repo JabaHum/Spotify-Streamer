@@ -44,6 +44,7 @@ public class SearchArtistFragment extends Fragment {
     private ArrayList<ArtistData> mArtistData;
     private Boolean mExecuteAdapter;
     Boolean mTwoPane;
+    CharSequence mSearchSequence;
 
     public SearchArtistFragment() {
     }
@@ -102,6 +103,9 @@ public class SearchArtistFragment extends Fragment {
                     mSpotifySearchAdapter.add(artist);
                 }
             }
+            if (savedInstanceState.containsKey("searchSequence")) {
+                mSearchSequence = savedInstanceState.getCharSequence("searchSequence");
+            }
         }
         EditText searchArtists = (EditText) rootView.findViewById(R.id.searchArtists);
 
@@ -116,14 +120,19 @@ public class SearchArtistFragment extends Fragment {
                 if (s.length() > 0) {
                     // mExecuteAdapter is used to prevent adapter execution after screen rotation
                     if (mExecuteAdapter) {
-                        FetchArtistsTask artists = new FetchArtistsTask();
-                        artists.execute(s.toString());
-                        Log.v("artistTask", " executing..");
+                        // No need to get artists if we already have them
+                        if (s != mSearchSequence || s.length() != 1) {
+                            FetchArtistsTask artists = new FetchArtistsTask();
+                            artists.execute(s.toString());
+                            Log.v("artistTask", " executing..");
+                        }
                     } else {
                         mExecuteAdapter = false;
                     }
+                    mSearchSequence = s;
                 } else {
                     mSpotifySearchAdapter.clear();
+                    mSearchSequence = null;
                 }
             }
 
@@ -153,6 +162,9 @@ public class SearchArtistFragment extends Fragment {
         if (mArtistData != null && !mArtistData.isEmpty() && mTwoPane != null) {
             outState.putParcelableArrayList("artistData", mArtistData);
             outState.putBoolean("twoPane", mTwoPane);
+        }
+        if (mSearchSequence != null) {
+            outState.putCharSequence("searchSequence", mSearchSequence);
         }
         super.onSaveInstanceState(outState);
     }

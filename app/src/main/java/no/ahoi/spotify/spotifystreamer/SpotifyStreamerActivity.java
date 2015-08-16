@@ -44,12 +44,12 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             mTwoPane = true;
             // SearchArtistFragment is added statically.
         } else {
+            mTwoPane = false;
             // TODO: If we're being restored from a previous state, then we don't need to do
             // anything and should return or else we could end up with overlapping fragments
-            /*if (savedInstanceState != null) {
+            if (savedInstanceState != null) {
                 return;
-            }*/
-            mTwoPane = false;
+            }
             // Add SearchArtistFragment Dynamically:
             // Create a new fragment to be placed in the activity layout
             SearchArtistFragment searchArtistFragment = new SearchArtistFragment();
@@ -62,6 +62,14 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                     .add(R.id.searchArtistsFragmentPlaceholder, searchArtistFragment).commit();
         }
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mTwoPane != null) {
+            outState.putBoolean("twoPane", mTwoPane);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
