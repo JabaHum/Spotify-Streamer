@@ -53,7 +53,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             // SearchArtistFragment is added statically.
         } else {
             mTwoPane = false;
-            // TODO: If we're being restored from a previous state, then we don't need to do
+            // If we're being restored from a previous state, then we don't need to do
             // anything and should return or else we could end up with overlapping fragments
             if (savedInstanceState != null) {
                 return;
@@ -69,7 +69,6 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.searchArtistsFragmentPlaceholder, searchArtistFragment).commit();
         }
-
     }
 
     @Override

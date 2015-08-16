@@ -39,7 +39,6 @@ public class TopTracksFragment extends Fragment {
     private ArrayList<TopTracksData> mTopTracksData;
     private ArtistData mArtistData;
     private OnTopTrackSelectedListener mCallback;
-    Boolean mTwoPane;
 
     public TopTracksFragment() {
     }
@@ -66,16 +65,6 @@ public class TopTracksFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        if (this.getArguments() != null) {
-            Bundle bundle = this.getArguments();
-            mTwoPane = bundle.getBoolean("twoPane");
-        } else if (savedInstanceState != null && savedInstanceState.containsKey("twoPane")) {
-            mTwoPane = savedInstanceState.getBoolean("twoPane");
-        } else {
-            Log.e(LOG_TAG, "twoPane info is missing.");
-            return null;
-        }
         View rootView = inflater.inflate(R.layout.fragment_top_tracks, container, false);
 
         mTopTracksAdapter = new TopTracksSearchAdapter(getActivity(), new ArrayList<TopTracksData>());
@@ -123,10 +112,9 @@ public class TopTracksFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mTopTracksData != null && !mTopTracksData.isEmpty() && mArtistData != null && mTwoPane != null) {
+        if (mTopTracksData != null && !mTopTracksData.isEmpty() && mArtistData != null) {
             outState.putParcelableArrayList("topTracksData", mTopTracksData);
             outState.putParcelable("artistData", mArtistData);
-            outState.putBoolean("twoPane", mTwoPane);
         }
         super.onSaveInstanceState(outState);
     }

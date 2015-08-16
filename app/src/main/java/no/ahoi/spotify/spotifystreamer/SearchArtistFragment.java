@@ -42,7 +42,6 @@ public class SearchArtistFragment extends Fragment {
     private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
     private OnArtistSelectedListener mCallback;
     private ArrayList<ArtistData> mArtistData;
-    private Boolean mTwoPane;
     private CharSequence mSearchSequence;
 
     public SearchArtistFragment() {
@@ -70,25 +69,7 @@ public class SearchArtistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        // Check if we are in two-pane mode
-        if (this.getArguments() != null) {
-            Bundle bundle = this.getArguments();
-            mTwoPane = bundle.getBoolean("twoPane");
-        } else if (savedInstanceState != null && savedInstanceState.containsKey("twoPane")) {
-            mTwoPane = savedInstanceState.getBoolean("twoPane");
-        } else {
-            // Since we don't trigger two-pane mode with a fragment transaction, we can be certain
-            // that we are in two-pane mode, because the boolean is passed otherwise.
-            mTwoPane = true;
-        }
-
-        Integer layoutId;
-        if (mTwoPane) {
-            layoutId = R.layout.fragment_search_artist;
-        } else {
-            layoutId = R.layout.fragment_search_artist;
-        }
-        View rootView = inflater.inflate(layoutId, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_search_artist, container, false);
 
         /* This triggers if we return to the fragment from the back stack.
          * The fragment is not re-created, but is re-used with the same instance.
@@ -164,10 +145,6 @@ public class SearchArtistFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (mArtistData != null && !mArtistData.isEmpty() && mTwoPane != null) {
-            outState.putParcelableArrayList("artistData", mArtistData);
-            outState.putBoolean("twoPane", mTwoPane);
-        }
         if (mSearchSequence != null) {
             outState.putCharSequence("searchSequence", mSearchSequence);
         }
