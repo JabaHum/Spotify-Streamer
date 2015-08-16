@@ -42,9 +42,8 @@ public class SearchArtistFragment extends Fragment {
     private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
     private OnArtistSelectedListener mCallback;
     private ArrayList<ArtistData> mArtistData;
-    private Boolean mExecuteAdapter;
-    Boolean mTwoPane;
-    CharSequence mSearchSequence;
+    private Boolean mTwoPane;
+    private CharSequence mSearchSequence;
 
     public SearchArtistFragment() {
     }
@@ -91,22 +90,31 @@ public class SearchArtistFragment extends Fragment {
         }
         View rootView = inflater.inflate(layoutId, container, false);
 
-        mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), new ArrayList<ArtistData>());
-        mExecuteAdapter = true;
-        if (savedInstanceState != null && savedInstanceState.containsKey("artistData")) {
-            mArtistData = savedInstanceState.getParcelableArrayList("artistData");
-            // When navigating back to this fragment with back button press, mArtistData's
-            // content will be null, but the key 'artistData' still exist.
-            if (mArtistData != null) {
-                mExecuteAdapter = false;
+        /* This triggers if we return to the fragment from the back stack.
+         * The fragment is not re-created, but is re-used with the same instance.
+         * We can't rely on savedInstanceState because onCreateView() is the
+         * first method called in the fragment lifecycle.
+         * Source: http://stackoverflow.com/questions/11353075/how-can-i-maintain-fragment-state-when-added-to-the-back-stack?answertab=votes#tab-top
+         */
+        if (mArtistData != null) {
+            for (ArtistData artist : mArtistData) {
+                mSpotifySearchAdapter.add(artist);
+            }
+        } else {
+            mSpotifySearchAdapter = new ArtistSearchAdapter(getActivity(), new ArrayList<ArtistData>());
+            // Populate data from savedInstanceState
+            if (savedInstanceState != null && savedInstanceState.containsKey("artistData")) {
+                mArtistData = savedInstanceState.getParcelableArrayList("artistData");
                 for (ArtistData artist : mArtistData) {
                     mSpotifySearchAdapter.add(artist);
                 }
-            }
-            if (savedInstanceState.containsKey("searchSequence")) {
-                mSearchSequence = savedInstanceState.getCharSequence("searchSequence");
+                if (savedInstanceState.containsKey("searchSequence")) {
+                    mSearchSequence = savedInstanceState.getCharSequence("searchSequence");
+                }
             }
         }
+
+
         EditText searchArtists = (EditText) rootView.findViewById(R.id.searchArtists);
 
         searchArtists.addTextChangedListener(new TextWatcher() {
@@ -116,20 +124,17 @@ public class SearchArtistFragment extends Fragment {
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.length() > 0) {
-                    // mExecuteAdapter is used to prevent adapter execution after screen rotation
-                    if (mExecuteAdapter) {
-                        // No need to get artists if we already have them
-                        if (s != mSearchSequence || s.length() != 1) {
-                            FetchArtistsTask artists = new FetchArtistsTask();
-                            artists.execute(s.toString());
-                            Log.v("artistTask", " executing..");
-                        }
-                    } else {
-                        mExecuteAdapter = false;
+            public void onTextChanged(CharSequence searchSeq, int start, int before, int count) {
+                if (searchSeq.length() > 0) {
+                    /* mSearchSequence is used to prevent adapter execution when the search
+                     * haven't changed. For example on orientation change or when
+                     * we are returning to this fragment from the back stack */
+                    if (mSearchSequence == null || !searchSeq.toString().contentEquals(mSearchSequence)) {
+                        // Execute AsyncTask to fetch and populate artists
+                        FetchArtistsTask artists = new FetchArtistsTask();
+                        artists.execute(searchSeq.toString());
                     }
-                    mSearchSequence = s;
+                    mSearchSequence = searchSeq;
                 } else {
                     mSpotifySearchAdapter.clear();
                     mSearchSequence = null;
