@@ -32,8 +32,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) { // Do not call directly
         // onStartCommand is called when the service is requested to start by a component (activity)
+
         if (intent != null && intent.getExtras() != null &&
-                intent.getExtras().containsKey("topTracksdata")) {
+                intent.getExtras().containsKey("topTracksdata") &&
+                intent.getExtras().containsKey("trackPosition")) {
 
             ArrayList<TopTracksData> topTracksData = intent.getExtras().getParcelableArrayList("topTracksdata");
             Integer trackPosition = intent.getExtras().getInt("trackPosition");
@@ -64,7 +66,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         }
         // START_STICKY tells the service to continue running until explicitly stopped.
         // the service can be stopped with stopSelf() or stopService(Intent service).
-        // Todo perform cleanup!
         return START_STICKY;
     }
 
@@ -149,6 +150,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     @Override
     public void onDestroy() { // Do not call directly
         // The service is no longer used and will be removed.
+        if (mMediaPlayer != null) {
+            mMediaPlayer.release();
+        }
     }
 
     @Override
