@@ -74,19 +74,17 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.dialog_play_track, container, false);
 
-        // To be certain we are receiving the correct track info, we always get info from the
-        // activity before trying to get info from savedInstanceState.
-        if (this.getArguments() != null) {
-            Bundle bundle = this.getArguments();
-            mArtistData = bundle.getParcelable("artistData");
-            mTopTracksData = bundle.getParcelableArrayList("topTracksData");
-            mTrackPosition = bundle.getInt("trackPosition");
-        } else if (savedInstanceState != null && savedInstanceState.containsKey("topTracksData") &&
+        if (savedInstanceState != null && savedInstanceState.containsKey("topTracksData") &&
                 savedInstanceState.containsKey("artistData") &&
                 savedInstanceState.containsKey("trackPosition")) {
             mArtistData = savedInstanceState.getParcelable("artistData");
             mTopTracksData = savedInstanceState.getParcelableArrayList("topTracksData");
             mTrackPosition = savedInstanceState.getInt("trackPosition");
+        } else if (this.getArguments() != null) {
+            Bundle bundle = this.getArguments();
+            mArtistData = bundle.getParcelable("artistData");
+            mTopTracksData = bundle.getParcelableArrayList("topTracksData");
+            mTrackPosition = bundle.getInt("trackPosition");
         }
 
         if (mArtistData != null && mTopTracksData != null && mTrackPosition != null) {
@@ -202,7 +200,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         removeSeekBarHandler();
     }
 
-    private void updateUI(Integer trackPosition, Boolean forceUpdate) {
+    protected void updateUI(Integer trackPosition, Boolean forceUpdate) {
         if (forceUpdate || !mTrackPosition.equals(trackPosition)) {
             mTrackPosition = trackPosition;
             TopTracksData topTrack = mTopTracksData.get(mTrackPosition);
@@ -248,12 +246,6 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
             public void run() {
                 int interval = 200;
                 Integer[] times = mActivity.updateTimes();
-                Integer trackPosition = mActivity.getTrackPosition();
-                // Update UI if song has changed
-                // TODO: use onCompletionListener
-                if (trackPosition != null && !mTrackPosition.equals(trackPosition)) {
-                    updateUI(trackPosition, false);
-                }
                 // get SeekBar times and set progress
                 if (times != null) {
                     // !! will be set every loop when track duration is 100 sek

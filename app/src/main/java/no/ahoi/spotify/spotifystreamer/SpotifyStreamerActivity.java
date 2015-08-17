@@ -1,13 +1,16 @@
 package no.ahoi.spotify.spotifystreamer;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,10 +23,11 @@ import java.util.ArrayList;
 
 public class SpotifyStreamerActivity extends AppCompatActivity implements SearchArtistFragment.OnArtistSelectedListener, TopTracksFragment.OnTopTrackSelectedListener {
     private static final String LOG_TAG = SpotifyStreamerActivity.class.getSimpleName();
-    ActionBar mActionBar;
-    MediaPlayerService mService;
-    Boolean mBound = false;
-    Boolean mTwoPane;
+    private ActionBar mActionBar;
+    protected MediaPlayerService mService;
+    private Boolean mBound = false;
+    private Boolean mTwoPane;
+    private Boolean mRegisterReceiver = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                 Intent intent = new Intent(this, MediaPlayerService.class);
                 bindService(intent, mConnection, 0);
             }
+            mRegisterReceiver = true;
         }
 
         // Check if activity is in two-pane mode
@@ -152,6 +157,13 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         playTrackFragment.show(fm, "dialog_play_track");
 
         startMediaPlayer(topTracksData, trackPosition);
+
+        if (mRegisterReceiver) {
+            LocalBroadcastManager.getInstance(this).registerReceiver((mReceiver),
+                    new IntentFilter("sendTrackPosition")
+            );
+            mRegisterReceiver = false;
+        }
     }
 
     @Override
@@ -178,6 +190,9 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     public void onStop() {
         super.onStop();
         Log.v("2", "onStop");
+        if (!mRegisterReceiver) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+        }
     }
     @Override
     public void onDestroy() {
@@ -193,6 +208,16 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     public void onStart() {
         super.onStart();
         Log.v("5", "onStart");
+        // TODO can't start broadcastReceiver when visiting home screen.
+        if (mRegisterReceiver) {
+            LocalBroadcastManager.getInstance(this).registerReceiver((mReceiver),
+                    new IntentFilter("sendTrackPosition")
+            );
+            mRegisterReceiver = false;
+            Log.v(LOG_TAG, "broadcastReceiver started successfully.");
+        } else {
+            Log.e(LOG_TAG, "Could not start broadcastReceiver.");
+        }
     }
     @Override
     public void onResume() {
@@ -296,4 +321,19 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             return null;
         }
     }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Updates UI in PlayTrackFragment when service's onCompleteListener runs.
+            Integer trackPosition = intent.getIntExtra("trackPosition", 0);
+            PlayTrackFragment playTrackFragment = (PlayTrackFragment) getSupportFragmentManager().findFragmentByTag("dialog_play_track");
+            // Fails if playTrackFragment isn't visible.
+            if (playTrackFragment != null) {
+                playTrackFragment.updateUI(trackPosition, false);
+            } else {
+                Log.v(LOG_TAG, "playTrackFragment is null.");
+            }
+        }
+    };
 }

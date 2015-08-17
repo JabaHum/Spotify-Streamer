@@ -6,6 +6,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.IOException;
@@ -22,9 +23,10 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     private static final String LOG_TAG = MediaPlayerService.class.getSimpleName();
 
     private final IBinder mBinder = new LocalBinder();
-    MediaPlayer mMediaPlayer;
-    ArrayList<TopTracksData> mTopTracksData;
-    Integer mCurrentTrackPosition;
+    protected MediaPlayer mMediaPlayer;
+    private ArrayList<TopTracksData> mTopTracksData;
+    private Integer mCurrentTrackPosition;
+    private LocalBroadcastManager mBroadcaster;
 
     public MediaPlayerService() {
     }
@@ -93,6 +95,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             public void onCompletion(MediaPlayer mp) {
                 Log.v("OnCompletionListener: ", "Track completed. starting next...");
                 playNextTrack();
+                updateUI();
             }
         });
         try {
@@ -145,6 +148,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
     public void onCreate() { // Do not call directly
         // Called by the system when the system is first created.
         // onCreate() will not be called if the service is already running.
+        mBroadcaster = LocalBroadcastManager.getInstance(this);
     }
 
     @Override
@@ -163,5 +167,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
 
     public Integer getTrackPosition() {
         return mCurrentTrackPosition;
+    }
+
+    private void updateUI() {
+        Intent intent = new Intent("sendTrackPosition");
+        intent.putExtra("trackPosition", mCurrentTrackPosition);
+        mBroadcaster.sendBroadcast(intent);
     }
 }
