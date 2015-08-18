@@ -35,8 +35,6 @@ import retrofit.RetrofitError;
  * lists artists based on user input
  */
 
-// TODO: Save results so that you don't have to redo Spotify Web API call when navigating back from TopTracksFragment
-
 public class SearchArtistFragment extends Fragment {
     private static final String LOG_TAG = SearchArtistFragment.class.getSimpleName();
     private ArrayAdapter<ArtistData> mSpotifySearchAdapter;
@@ -86,8 +84,10 @@ public class SearchArtistFragment extends Fragment {
             // Populate data from savedInstanceState
             if (savedInstanceState != null && savedInstanceState.containsKey("artistData")) {
                 mArtistData = savedInstanceState.getParcelableArrayList("artistData");
-                for (ArtistData artist : mArtistData) {
-                    mSpotifySearchAdapter.add(artist);
+                if (mArtistData != null) {
+                    for (ArtistData artist : mArtistData) {
+                        mSpotifySearchAdapter.add(artist);
+                    }
                 }
                 if (savedInstanceState.containsKey("searchSequence")) {
                     mSearchSequence = savedInstanceState.getCharSequence("searchSequence");
