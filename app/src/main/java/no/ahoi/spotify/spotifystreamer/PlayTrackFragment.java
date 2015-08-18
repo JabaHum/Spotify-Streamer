@@ -129,7 +129,6 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        Log.v(LOG_TAG, v.getId() + "");
         Integer trackPosition;
         switch(v.getId()) {
             case R.id.dialogBtnPlayToggle:
@@ -187,6 +186,10 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     @Override
     public void onResume() {
         super.onResume();
+        if (mActivity != null && mActivity.trackController("isPlaying", null)) {
+            Integer trackPosition = mActivity.getTrackPosition();
+            updateUI(trackPosition, false);
+        }
     }
 
     @Override
