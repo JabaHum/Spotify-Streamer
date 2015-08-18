@@ -53,7 +53,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
         }
         // Call to SpotifyStreamerActivity should not be done if fragment is to be
         // called from multiple activities. Since we only have one activity, this is OK.
-        // http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
+        // Source: http://stackoverflow.com/questions/12659747/call-an-activity-method-from-a-fragment#answer-12683615
         mActivity = (SpotifyStreamerActivity) getActivity();
     }
 
@@ -167,8 +167,15 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         // Set SeekBar times
-        mPlayTimeElapsed.setText(Integer.toString(progress));
-        mPlayTimeLeft.setText(Integer.toString((progress - mSeekBar.getMax())));
+        Integer secElapsed = progress % 60;
+        Integer minElapsed = (progress / 60) % 60;
+        String timeElapsed = String.format("%d.%02d", minElapsed, secElapsed);
+        mPlayTimeElapsed.setText(timeElapsed);
+        Integer secLeft = (progress - mSeekBar.getMax()) % 60;
+        Integer minLeft = ((progress - mSeekBar.getMax()) / 60) % 60;
+        // Set negative minutes and seconds to positive to format string correctly
+        String timeLeft = "-" + String.format("%d.%02d", minLeft * -1, secLeft * -1);
+        mPlayTimeLeft.setText(timeLeft);
     }
 
     // Notification that the user has started a SeekBar touch gesture.
@@ -239,7 +246,8 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
     }
 
     // Update SeekBar times
-    // http://stackoverflow.com/questions/6242268/repeat-a-task-with-a-time-delay/6242292#6242292
+    // Source: http://stackoverflow.com/questions/6242268/repeat-a-task-with-a-time-delay/6242292#6242292
+    // TODO animate SeekBar instead of updating so often
     private void updateSeekBarTimes() {
         if (mHandler == null) {
             mHandler = new Handler();
@@ -251,7 +259,7 @@ public class PlayTrackFragment extends DialogFragment implements View.OnClickLis
                 Integer[] times = mActivity.updateTimes();
                 // get SeekBar times and set progress
                 if (times != null) {
-                    // !! will be set every loop when track duration is 100 sek
+                    // TODO: Pitfall: will be set every interval when track duration is 100 sek.
                     if (mSeekBar.getMax() == 100) {
                         mSeekBar.setMax(times[0] / 1000);
                     }
