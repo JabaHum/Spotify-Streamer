@@ -192,6 +192,8 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         Log.v("2", "onStop");
         if (!mRegisterReceiver) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mReceiver);
+            // Must reset flag in case home button is pressed (because onCreate() doesn't run)
+            mRegisterReceiver = true;
         }
     }
     @Override
@@ -208,13 +210,11 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
     public void onStart() {
         super.onStart();
         Log.v("5", "onStart");
-        // TODO can't start broadcastReceiver when visiting home screen.
         if (mRegisterReceiver) {
             LocalBroadcastManager.getInstance(this).registerReceiver((mReceiver),
                     new IntentFilter("sendTrackPosition")
             );
             mRegisterReceiver = false;
-            Log.v(LOG_TAG, "broadcastReceiver started successfully.");
         } else {
             Log.e(LOG_TAG, "Could not start broadcastReceiver.");
         }
