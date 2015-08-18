@@ -89,7 +89,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MediaPlayerService.this, "A wild error appeared.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MediaPlayerService.this, "A wild error appeared while streaming", Toast.LENGTH_LONG).show();
                     }
                 });
 
