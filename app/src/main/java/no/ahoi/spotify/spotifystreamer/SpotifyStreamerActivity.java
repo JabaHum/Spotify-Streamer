@@ -243,49 +243,47 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
 
     public Boolean trackController(String command, Integer position) {
         String TAG = "trackController()";
-
+        Boolean returnFlag = false;
         if (mBound && mService != null && mService.mMediaPlayer != null) {
             MediaPlayer mp = mService.mMediaPlayer;
             switch (command) {
-                // TODO find better return solution
                 case "start":
                     if (!mp.isPlaying()) {
-                        mp.start();
                         Log.v(TAG, "starting track.");
-                        return true;
-                    } else {
-                        return false;
+                        mp.start();
+                        returnFlag = true;
                     }
+                    break;
                 case "pause":
                     if (mp.isPlaying()) {
-                        mp.pause();
                         Log.v(TAG, "Pausing track.");
-                        return true;
-                    } else {
-                        return false;
+                        mp.pause();
+                        returnFlag = true;
                     }
+                    break;
                 case "isPlaying":
                     return mp.isPlaying();
                 case "seekTo":
                     mp.seekTo(position * 1000);
-                    return true;
+                    returnFlag = true;
+                    break;
                 case "next":
                     mService.playNextTrack();
-                    return true;
+                    returnFlag = true;
+                    break;
                 case "previous":
                     mService.playPreviousTrack();
-                    return true;
+                    returnFlag = true;
+                    break;
             }
         }
 
         if (mService == null) {
-            Log.e("mService", "IS NULL!!");
-        } else {
-            if (mService.mMediaPlayer == null) {
-                Log.e("mMediaPlayer", "IS NULL!!");
-            }
+            Log.e(LOG_TAG, "mService is null.");
+        } else if (mService.mMediaPlayer == null) {
+            Log.e(LOG_TAG, "mMediaPlayer is null.");
         }
-        return null;
+        return returnFlag;
     }
 
     public Integer[] updateTimes() {
