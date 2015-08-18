@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,7 +40,6 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         if (intent != null && intent.getExtras() != null &&
                 intent.getExtras().containsKey("topTracksdata") &&
                 intent.getExtras().containsKey("trackPosition")) {
-
             ArrayList<TopTracksData> topTracksData = intent.getExtras().getParcelableArrayList("topTracksdata");
             Integer trackPosition = intent.getExtras().getInt("trackPosition");
             if (topTracksData != null && !topTracksData.isEmpty()) {
@@ -83,8 +84,15 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Log.e(LOG_TAG, "MediaPlayer()->OnErrorListener()->OnError() something went wrong");
-                // TODO Toast!
+                Log.e(LOG_TAG, "OnErrorListener() - what: " + what);
+                Handler handler = new Handler();
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MediaPlayerService.this, "A wild error appeared.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
                 // The MediaPlayer has moved to the Error state. Reset.
                 mp.reset();
                 return false;
