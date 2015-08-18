@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.IBinder;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -18,6 +20,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -150,19 +153,20 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
          * as well. Whenever the fragment view resumes, we get the track position from the service
          * and update ui if needed.
          */
+        if (isOnline()) {
+            // show PlayTrackFragment
+            FragmentManager fm = getSupportFragmentManager();
+            PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(artistData, topTracksData, trackPosition, mTwoPane);
+            playTrackFragment.show(fm, "dialog_play_track");
 
-        // show PlayTrackFragment
-        FragmentManager fm = getSupportFragmentManager();
-        PlayTrackFragment playTrackFragment = PlayTrackFragment.newInstance(artistData, topTracksData, trackPosition, mTwoPane);
-        playTrackFragment.show(fm, "dialog_play_track");
+            startMediaPlayer(topTracksData, trackPosition);
 
-        startMediaPlayer(topTracksData, trackPosition);
-
-        if (mRegisterReceiver) {
-            LocalBroadcastManager.getInstance(this).registerReceiver((mReceiver),
-                    new IntentFilter("sendTrackPosition")
-            );
-            mRegisterReceiver = false;
+            if (mRegisterReceiver) {
+                LocalBroadcastManager.getInstance(this).registerReceiver((mReceiver),
+                        new IntentFilter("sendTrackPosition")
+                );
+                mRegisterReceiver = false;
+            }
         }
     }
 
@@ -248,7 +252,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             MediaPlayer mp = mService.mMediaPlayer;
             switch (command) {
                 case "start":
-                    if (!mp.isPlaying()) {
+                    if (!mp.isPlaying() && isOnline()) {
                         Log.v(TAG, "starting track.");
                         mp.start();
                         returnFlag = true;
@@ -257,6 +261,7 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                 case "pause":
                     if (mp.isPlaying()) {
                         Log.v(TAG, "Pausing track.");
+                        isOnline();
                         mp.pause();
                         returnFlag = true;
                     }
@@ -268,12 +273,16 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
                     returnFlag = true;
                     break;
                 case "next":
-                    mService.playNextTrack();
-                    returnFlag = true;
+                    if (isOnline()) {
+                        mService.playNextTrack();
+                        returnFlag = true;
+                    }
                     break;
                 case "previous":
-                    mService.playPreviousTrack();
-                    returnFlag = true;
+                    if (isOnline()) {
+                        mService.playPreviousTrack();
+                        returnFlag = true;
+                    }
                     break;
             }
         }
@@ -325,7 +334,8 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
         public void onReceive(Context context, Intent intent) {
             // Updates UI in PlayTrackFragment when service's onCompleteListener runs.
             Integer trackPosition = intent.getIntExtra("trackPosition", 0);
-            PlayTrackFragment playTrackFragment = (PlayTrackFragment) getSupportFragmentManager().findFragmentByTag("dialog_play_track");
+            PlayTrackFragment playTrackFragment = (PlayTrackFragment) getSupportFragmentManager()
+                    .findFragmentByTag("dialog_play_track");
             // Fails if playTrackFragment isn't visible.
             if (playTrackFragment != null) {
                 playTrackFragment.updateUI(trackPosition, false);
@@ -334,4 +344,18 @@ public class SpotifyStreamerActivity extends AppCompatActivity implements Search
             }
         }
     };
+
+    // Check the Network Connection. (permission needed)
+    // Source: http://developer.android.com/intl/ko/training/basics/network-ops/connecting.html
+    private Boolean isOnline() {
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        } else {
+            Toast.makeText(this, "Network connection lost. Please reconnect.", Toast.LENGTH_LONG).show();
+            return false;
+        }
+    }
 }

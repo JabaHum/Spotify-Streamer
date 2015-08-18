@@ -1,9 +1,12 @@
 package no.ahoi.spotify.spotifystreamer;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -102,8 +105,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.v("OnCompletionListener: ", "Track completed. starting next...");
-                playNextTrack();
-                updateUI();
+                if (isOnline()) {
+                    playNextTrack();
+                    updateUI();
+                } else {
+                    // Network Connection lost. Toast!
+                    Handler handler = new Handler();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MediaPlayerService.this, "Network connection lost. Please reconnect.", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
             }
         });
         try {
@@ -181,5 +195,19 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnPrepare
         Intent intent = new Intent("sendTrackPosition");
         intent.putExtra("trackPosition", mCurrentTrackPosition);
         mBroadcaster.sendBroadcast(intent);
+    }
+
+    // Check the Network Connection. (permission needed)
+    // Source: http://developer.android.com/intl/ko/training/basics/network-ops/connecting.html
+    private Boolean isOnline() {
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            return true;
+        } else {
+            Toast.makeText(this, "Network connection lost. Please reconnect.", Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 }
